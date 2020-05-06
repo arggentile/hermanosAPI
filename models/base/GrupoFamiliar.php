@@ -18,10 +18,13 @@ use Yii;
  * @property string $nro_tarjetacredito
  * @property string $tarjeta_banco
  * @property string $prestador_tarjeta
+ * @property string $cuil_afip_pago
  *
  * @property \app\models\Alumno[] $alumnos
+ * @property \app\models\ConvenioPago[] $convenioPagos
  * @property \app\models\FormaPago $pagoAsociado
  * @property \app\models\Responsable[] $responsables
+ * @property \app\models\ServicioDebitoAutomatico[] $servicioDebitoAutomaticos
  * @property string $aliasModel
  */
 abstract class GrupoFamiliar extends \yii\db\ActiveRecord
@@ -50,6 +53,7 @@ abstract class GrupoFamiliar extends \yii\db\ActiveRecord
             [['cbu_cuenta'], 'string', 'max' => 22],
             [['nro_tarjetacredito'], 'string', 'max' => 16],
             [['tarjeta_banco', 'prestador_tarjeta'], 'string', 'max' => 50],
+            [['cuil_afip_pago'], 'string', 'max' => 11],
             [['id_pago_asociado'], 'exist', 'skipOnError' => true, 'targetClass' => \app\models\FormaPago::className(), 'targetAttribute' => ['id_pago_asociado' => 'id']]
         ];
     }
@@ -69,6 +73,7 @@ abstract class GrupoFamiliar extends \yii\db\ActiveRecord
             'nro_tarjetacredito' => 'Nro Tarjetacredito',
             'tarjeta_banco' => 'Tarjeta Banco',
             'prestador_tarjeta' => 'Prestador Tarjeta',
+            'cuil_afip_pago' => 'Cuil Afip Pago',
         ];
     }
 
@@ -78,6 +83,14 @@ abstract class GrupoFamiliar extends \yii\db\ActiveRecord
     public function getAlumnos()
     {
         return $this->hasMany(\app\models\Alumno::className(), ['id_grupofamiliar' => 'id']);
+    }
+
+    /**
+     * @return \yii\db\ActiveQuery
+     */
+    public function getConvenioPagos()
+    {
+        return $this->hasMany(\app\models\ConvenioPago::className(), ['id_familia' => 'id']);
     }
 
     /**
@@ -94,6 +107,14 @@ abstract class GrupoFamiliar extends \yii\db\ActiveRecord
     public function getResponsables()
     {
         return $this->hasMany(\app\models\Responsable::className(), ['id_grupofamiliar' => 'id']);
+    }
+
+    /**
+     * @return \yii\db\ActiveQuery
+     */
+    public function getServicioDebitoAutomaticos()
+    {
+        return $this->hasMany(\app\models\ServicioDebitoAutomatico::className(), ['id_familia' => 'id']);
     }
 
 

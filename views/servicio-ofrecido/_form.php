@@ -129,8 +129,8 @@ use kartik\widgets\DatePicker;
         
     <div class="box-footer">
         <div class="form-group">
-            <div class="col-sm-offset-2 col-sm-6 ">
-                <?= Html::submitButton('<i class="fa fa-save"></i> Guardar', ['class' => 'btn btn-success btnwidth100 btn-submit-envio',]) ?>
+            <div class="col-sm-offset-2 col-sm-8 ">
+                <?= Html::submitButton('<i class="fa fa-save"></i> Guardar', ['class' => 'btn btn-select btnwidth100 btn-submit-envio',]) ?>
             </div>
         </div>
     </div>

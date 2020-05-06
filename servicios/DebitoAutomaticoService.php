@@ -26,6 +26,76 @@ use app\helpers\GralException;
 class DebitoAutomaticoService {
 
     
+    
+    public static function eliminarDebitoAutomatico($id){        
+        try{
+            $transaction = Yii::$app->db->beginTransaction(); 
+            $model = DebitoAutomatico::findOne($id);
+            if(empty($model))
+                throw new GralException('Modelo no encontrado para su eliminación');
+            
+            if(!$model->getSePuedeEliminar())
+                throw new GralException('No se puede eliminar el Debito, el mismo ya fue procesado.');
+            
+            $valid = true;
+            $serviciosDebitoAutomatico = ServicioDebitoAutomatico::find()->andWhere(['id_debitoautomatico'=>$id])->all();
+            if(!empty($serviciosDebitoAutomatico)){
+                foreach($serviciosDebitoAutomatico as $serDA){
+                    /* @var ServicioDebitoAutomatico $serDA */
+                    if($serDA->tiposervicio == DebitoAutomatico::ID_TIPOSERVICIO_SERVICIOS){
+                        $modelServicioAlumno = ServicioAlumno::findOne($serDA->id_servicio);
+                        if(empty($modelServicioAlumno))
+                            throw new GralException('No se encuentra el servicio dentro del Debito a cambiar su estado');
+                        
+                        $modelServicioAlumno->id_estado = EstadoServicio::ID_ABIERTA;
+                        if(!$modelServicioAlumno->save()){
+                            $valid = false;
+                            \Yii::$app->getModule('audit')->data('errorAction', json_encode($modelServicioAlumno->errors));  
+                            throw new GralException('Error al retroceder el Servicio del Alumno');
+                        }
+                    }elseif($serDA->tiposervicio == DebitoAutomatico::ID_TIPOSERVICIO_CONVENIO_PAGO){
+                        $modelCCP = \app\models\CuotaConvenioPago::findOne($serDA->id_servicio);
+                        if(empty($modelCCP)){
+                           throw new GralException('No se encuentra la Cuota del Convenio de Pago a revertir');
+                        }
+                        
+                        $modelCCP->id_estado = EstadoServicio::ID_ABIERTA;
+                        if(!$modelCCP->save()){
+                            $valid = false;
+                            \Yii::$app->getModule('audit')->data('errorAction', json_encode($modelServicioAlumno->errors));  
+                            throw new GralException('Error al retroceder la Cuota del Convenio de Pago.');
+                        }
+                    }
+                    if(!$serDA->delete())
+                        throw new GralException('No se pudo eliminar el servicio asociado al Debito.');
+                }
+            }
+            
+            if($model->delete()){
+                $transaction->commit();
+                $response['success'] = true;
+                $response['mensaje'] = 'Eliminación correcta';
+                return $response;
+            }else{
+                $transaction->rollBack();
+                $response['success'] = false;
+                $response['mensaje'] = 'Eliminación erronea';
+                $response['error_models'] =   $model->errors; 
+                return $response;
+            }
+        }catch (GralException $e) {
+            (isset($transaction) && $transaction->isActive)?$transaction->rollBack():'';
+            \Yii::$app->getModule('audit')->data('errorAction', json_encode($e));  
+            throw new GralException($e->getMessage());            
+        }catch (\Exception $e) {      
+            (isset($transaction) && $transaction->isActive)?$transaction->rollBack():'';
+            \Yii::$app->getModule('audit')->data('errorAction', \yii\helpers\VarDumper::dumpAsString($e));
+            throw new yii\web\HttpException(500, $e->getMessage());
+        }              
+    }
+    
+    
+    
     public function armarDebitoAutomatico($idDA) {
         try{
             $modelDebAut = DebitoAutomatico::findOne($idDA);
@@ -46,17 +116,15 @@ class DebitoAutomaticoService {
         }catch (Exception $e){           
             \Yii::$app->getModule('audit')->data('errorAction', \yii\helpers\VarDumper::dumpAsString($e));
             throw new \yii\web\HttpException(500, "Error interno al procesar la solicitud.");
-        }   
-        
+        }
     }    
 
- /****************************************************************/
+    /****************************************************************/
     /************ DEBITOS TC BANCO PATAGONIA ************************/
-    /****************************************************************/  
-    
+    /****************************************************************/
     public function generaArchivoPatagoniaTC($idDA){    
         ini_set('memory_limit', -1);
-        set_time_limit(480);        
+        set_time_limit(999);        
         try{        
             $transaction = Yii::$app->db->beginTransaction();
         
@@ -68,52 +136,67 @@ class DebitoAutomaticoService {
             $periodoFin = $modelArchivo->fin_periodo;
             $fechaVencimiento = $modelArchivo->fecha_debito;
         
-       
-            $sql = 
-                "SELECT * FROM (
-                   (
-                    SELECT a.nrofamilia as nrofamilia, a.nrotarjeta, sa.id as idservicio, 
-                            (sa.importe_servicio - sa.importe_descuento - sa.importe_abonado) as monto, 
-                            ". DebitoAutomatico::ID_SERVICIO_CUOTAS . " as tiposervicio
-                        FROM servicio_alumno sa 
-                        INNER JOIN ( 
-                            SELECT a.id as idalumno, f.id as nrofamilia, f.nro_tarjetacredito as nrotarjeta 
-                             FROM alumno a INNER JOIN grupo_familiar f ON (f.id = a.id_grupofamiliar) 
-                              WHERE (f.id_pago_asociado = ". FormaPago::ID_DEBITO_TC . ") 
-                        ) a ON (a.idalumno = sa.id_alumno) 
-                        
-                        INNER JOIN servicio_ofrecido so ON (so.id = sa.id_servicio)                     
-                        INNER JOIN categoria_servicio_ofrecido cts ON (cts.id = so.id_categoriaservicio) 
-                    WHERE (sa.id_estado = ". EstadoServicio::ID_ABIERTA  .") 
-                        and ((so.fecha_vencimiento >= '".$periodoIni."') and (so.fecha_vencimiento <= '".$periodoFin."'))
-                    ORDER BY a.nrofamilia
-                   )
-                   UNION
-                   (
-                    SELECT a.nrofamilia as nrofamilia, a.nrotarjeta, ccp.id as idservicio, 
-                            (sa.importe_servicio - sa.importe_descuento - sa.importe_abonado) as monto, 
-                            ". DebitoAutomatico::ID_SERVICIO_CONVENIO_PAGO . " as tiposervicio
-                        FROM servicio_alumno sa 
-                        INNER JOIN ( 
-                            SELECT a.id as idalumno, f.id as nrofamilia, f.nro_tarjetacredito as nrotarjeta 
-                             FROM alumno a INNER JOIN grupo_familiar f ON (f.id = a.id_grupofamiliar) 
-                              WHERE (f.id_pago_asociado = ". FormaPago::ID_DEBITO_TC . ") 
-                        ) a ON (a.idalumno = sa.id_alumno) 
-                        INNER JOIN convenio_pago cp ON cp.id_familia = a.nrofamilia
-                        INNER JOIN cuota_convenio_pago ccp ON (ccp.	id_conveniopago  = cp.id)                     
-                     WHERE (ccp.id_estado = ". EstadoServicio::ID_ABIERTA  .") 
-                     and ((ccp.fecha_establecida >= '".$periodoIni."') and (ccp.fecha_establecida <= '".$periodoFin."'))
-                    ) 
-                ) as D";
+            $sqlServiciosXItems = "SELECT 
+                        D.idfamilia as idfamilia, 
+                        D.nro_tarjetacredito as nro_tarjetacredito, 
+                        D.idservicio as idservicio, 
+                        D.monto as monto, 
+                        D.tiposervicio  as tiposervicio FROM (
+                    (
+                    SELECT 
+                        alu.id_grupofamiliar as idfamilia, 
+                        fam.nro_tarjetacredito as nro_tarjetacredito, 
+                        sa.id as idservicio, 
+                        (sa.importe_servicio - sa.importe_descuento - sa.importe_abonado) as monto, 
+                        ". DebitoAutomatico::ID_TIPOSERVICIO_SERVICIOS . " as tiposervicio
 
-            $connection = $connection = Yii::$app->db;        
-            $command = $connection->createCommand($sql);
+                    FROM servicio_alumno sa 
+                    INNER JOIN alumno as alu ON (alu.id = sa.id_alumno)
+                    INNER JOIN grupo_familiar as fam ON (fam.id = alu.id_grupofamiliar)
+                    INNER JOIN servicio_ofrecido so ON (so.id = sa.id_servicio)
+                    WHERE (alu.activo = '1') and (fam.id_pago_asociado= ". FormaPago::ID_DEBITO_TC . ") 
+                        and (sa.id_estado = ". EstadoServicio::ID_ABIERTA  .") 
+                        and ((so.fecha_vencimiento >= '".$periodoIni."') and (so.fecha_vencimiento <= '".$periodoFin."'))
+                    ORDER BY fam.id
+                    )
+                    UNION                   
+                    (
+                    SELECT 
+                        fam.id as idfamilia, 
+                        fam.nro_tarjetacredito as nro_tarjetacredito, 
+                        ccp.id as idservicio, 
+                        (ccp.monto) as monto, 
+                        " . DebitoAutomatico::ID_TIPOSERVICIO_CONVENIO_PAGO . " as tiposervicio
+                    FROM cuota_convenio_pago ccp 
+                      INNER JOIN convenio_pago cp ON (cp.id = ccp.id_conveniopago)	
+                      INNER JOIN grupo_familiar as fam ON (fam.id = cp.id_familia) 
+                    WHERE (cp.deb_automatico = 1) and (fam.id_pago_asociado = ". FormaPago::ID_DEBITO_TC . ")
+                       and (ccp.id_estado =  ". EstadoServicio::ID_ABIERTA  .")
+                       and ((ccp.fecha_establecida >= '".$periodoIni."') and (ccp.fecha_establecida <= '".$periodoFin."'))
+
+                    ) 
+                ) as D 
+                ORDER BY D.idfamilia";
             
-            \Yii::$app->getModule('audit')->data('errorAction', $command->getRawSql());   
-            $result = $command->queryAll(); 
-            if(empty($result)){
+            
+           $sqlMontoTotalFamiliar = "SELECT DEB.idfamilia, DEB.nro_tarjetacredito, SUM(DEB.monto) as montototal FROM (" .
+                   $sqlServiciosXItems . ") AS DEB GROUP BY DEB.idfamilia,DEB.nro_tarjetacredito";
+           
+         
+       
+            $connection = Yii::$app->db;        
+            $command = $connection->createCommand($sqlServiciosXItems);
+            
+            $commandMontosTotales = $connection->createCommand($sqlMontoTotalFamiliar);
+            
+            
+            $result = $command->queryAll();            
+            
+            if(count($result)==0){
                 throw new GralException('No se puede armar el archivo; no existen servicos de alumnos/familiar a debitar.');      
-            }            
+            }
+            
+            $resultMontosTotales = $commandMontosTotales->queryAll();  
             
             $carp_cont = Yii::getAlias('@webroot') . "/archivos_generados/patagonia/tc/generados";
             $filename = 'debitos-'. $modelArchivo->id .'.txt';
@@ -134,55 +217,53 @@ class DebitoAutomaticoService {
 
             $saldo_total = 0;                   
             $cantidad = 0;
-            $procesa = true;   
-                
-            //variables que mantiene la cantidad y totales de servicios de cada 
-            //familia en cada linea, para cada familia solo se manda un regln; no se puede detallar cada servicio por separado
+            $procesa = true;
+
             $nroServicioFamilia = 1;
-            $nroFamiliaAnterior = $result[0]['nrofamilia'];
-            $nrotarjetaAnterior = $result[0]['nrotarjeta'];
-            $totalMontoFamilia=0;
-                
-            foreach($result as $row){                  
-                if($procesa == TRUE){ 
+            $nroFamiliaAnterior = 0;
+            
+            //por un lado armamos el archivos
+            
+            foreach($resultMontosTotales as $rowTotalFamilia){
+                if($procesa){ 
                     $cantidad +=1;
 
-                    $nrofamilia = $row['nrofamilia'];
-                    $nrotarjeta = $row['nrotarjeta'];
-                    $monto = $row['monto'];
+                    $nrofamilia = $rowTotalFamilia['idfamilia'];
+                    $nrotarjeta = $rowTotalFamilia['nro_tarjetacredito'];
+                    $monto = $rowTotalFamilia['montototal'];
                     $saldo_total = $saldo_total + $monto;  
-
-                    if($nroFamiliaAnterior!=$nrofamilia){
-                        $contenido.= $this->devolverLinea_PATAGONIA_TC($nroFamiliaAnterior, $nrotarjeta, $cantidad, $totalMontoFamilia, $fechaVencimiento);  
-                        $nroServicioFamilia = 1;
-                        $nroFamiliaAnterior = $nrofamilia;
-                        $totalMontoFamilia=$monto;
-                    }else
-                        $totalMontoFamilia +=  $monto;
-
-
+                    $nroServicioFamilia = 1;       
+                    $contenido.= $this->devolverLinea_PATAGONIA_TC($nrofamilia, $nrotarjeta, $cantidad, $monto, $fechaVencimiento);  
+                }
+            }
+            
+            
+            //creamos servicio en el debito y actualizamos servicios de alumno y cuotas a sus estados correspondientes
+            foreach($result as $rowServicio){
+                $nroServicioFamilia = 1;
+                if($procesa){ 
                     $servicio_da = new ServicioDebitoAutomatico();
                     $servicio_da->id_debitoautomatico = $modelArchivo->id;
-                    $servicio_da->id_servicio = $row['idservicio'];
-                    $servicio_da->tiposervicio = $row['tiposervicio'];
-                    $servicio_da->linea = 'FAMILIA '.$nrofamilia .' - MATRICULA ' .$nroServicioFamilia;
-                    $servicio_da->id_familia = $nrofamilia;
-                    $servicio_da->importe = (float) $monto ;
-                    if($row['tiposervicio']== DebitoAutomatico::ID_SERVICIO_CUOTAS){
-                        $miServicio = ServicioAlumno::findOne($row['idservicio']);
+                    $servicio_da->id_servicio = $rowServicio['idservicio'];
+                    $servicio_da->tiposervicio = $rowServicio['tiposervicio'];
+                    $servicio_da->linea = 'FAMILIA '.$rowServicio['idfamilia'] .' - MATRICULA ' .$nroServicioFamilia; 
+                    $servicio_da->id_familia = $rowServicio['idfamilia'];
+                    $servicio_da->importe = (float) $rowServicio['monto'] ;
+                    if($rowServicio['tiposervicio'] == DebitoAutomatico::ID_TIPOSERVICIO_SERVICIOS){
+                        $miServicio = ServicioAlumno::findOne($rowServicio['idservicio']);
                         $miServicio->id_estado = EstadoServicio::ID_EN_DEBITOAUTOMATICO;
                         $procesa = $servicio_da->save() && $miServicio->save();    
                     }else
-                    if($row['tiposervicio'] == DebitoAutomatico::ID_SERVICIO_CONVENIO_PAGO){
-                        $miServicio = \app\models\CuotaConvenioPago::findOne($row['idservicio']);
+                    if($rowServicio['tiposervicio'] == DebitoAutomatico::ID_TIPOSERVICIO_CONVENIO_PAGO){
+                        $miServicio = \app\models\CuotaConvenioPago::findOne($rowServicio['idservicio']);
                         $miServicio->id_estado = EstadoServicio::ID_EN_DEBITOAUTOMATICO;
                         $procesa = $servicio_da->save() && $miServicio->save();    
-                    } 
-                }                    
-
+                    }                                               
+                }    
             }
-            $contenido.= $this->devolverLinea_PATAGONIA_TC($nrofamilia, $nrotarjeta, $cantidad, $totalMontoFamilia, $fechaVencimiento);                           
-
+            
+            
+         
             $modelArchivo->saldo_enviado = $saldo_total;
                 
             $pie="9DEBLIQC ";
@@ -322,12 +403,10 @@ class DebitoAutomaticoService {
                         ccp.id as idservicio, 
                         (ccp.monto) as monto, 
                         " . DebitoAutomatico::ID_TIPOSERVICIO_CONVENIO_PAGO . " as tiposervicio
-                    FROM servicio_alumno as sa 
-                      INNER JOIN alumno as alu ON (alu.id = sa.id_alumno)
-                      INNER JOIN grupo_familiar as fam ON (fam.id = alu.id_grupofamiliar)
-                      INNER JOIN convenio_pago as cp ON (cp.id_familia = fam.id)
-                      INNER JOIN cuota_convenio_pago ccp ON (ccp.	id_conveniopago  = cp.id)   
-                    WHERE (alu.activo = '1') and (fam.id_pago_asociado = ". FormaPago::ID_DEBITO_CBU . ")
+                    FROM cuota_convenio_pago ccp 
+                      INNER JOIN convenio_pago cp ON (cp.id = ccp.id_conveniopago)	
+                      INNER JOIN grupo_familiar as fam ON (fam.id = cp.id_familia) 
+                    WHERE (cp.deb_automatico = 1) and (fam.id_pago_asociado = ". FormaPago::ID_DEBITO_CBU . ")
                        and (ccp.id_estado =  ". EstadoServicio::ID_ABIERTA  .")
                        and ((ccp.fecha_establecida >= '".$periodoIni."') and (ccp.fecha_establecida <= '".$periodoFin."'))
 
@@ -345,17 +424,15 @@ class DebitoAutomaticoService {
             $command = $connection->createCommand($sqlServiciosXItems);
             
             $commandMontosTotales = $connection->createCommand($sqlMontoTotalFamiliar);
-            \Yii::$app->getModule('audit')->data('errorAction', $command->getRawSql());
-             \Yii::$app->getModule('audit')->data('errorAction', $commandMontosTotales->getRawSql());
+            
             
             $result = $command->queryAll();            
             
-            if(empty($result)){
+            if(count($result)==0){
                 throw new GralException('No se puede armar el archivo; no existen servicos de alumnos/familiar a debitar.');      
             }
             
-            $resultMontosTotales = $commandMontosTotales->queryAll();            
-            
+            $resultMontosTotales = $commandMontosTotales->queryAll();  
             
             $carp_cont = Yii::getAlias('@webroot') . "/archivos_generados/patagonia/cbu/generados";
             $filename = 'debitos-'. $modelArchivo->id .'.txt';                
@@ -413,12 +490,27 @@ class DebitoAutomaticoService {
                     if($rowServicio['tiposervicio'] == DebitoAutomatico::ID_TIPOSERVICIO_SERVICIOS){
                         $miServicio = ServicioAlumno::findOne($rowServicio['idservicio']);
                         $miServicio->id_estado = EstadoServicio::ID_EN_DEBITOAUTOMATICO;
-                        $procesa = $servicio_da->save() && $miServicio->save();    
+                        if(!$servicio_da->save()){
+                            $procesa = false;
+                            \Yii::$app->getModule('audit')->data('errorServicioDebitoAutomatico', \yii\helpers\VarDumper::dumpAsString($servicio_da->errors)); 
+                        }
+                        if(!$miServicio->save()){
+                            $procesa = false;
+                            \Yii::$app->getModule('audit')->data('errorServicioAlumno', \yii\helpers\VarDumper::dumpAsString($miServicio->errors)); 
+                        }
+                        
                     }else
                     if($rowServicio['tiposervicio'] == DebitoAutomatico::ID_TIPOSERVICIO_CONVENIO_PAGO){
                         $miServicio = \app\models\CuotaConvenioPago::findOne($rowServicio['idservicio']);
                         $miServicio->id_estado = EstadoServicio::ID_EN_DEBITOAUTOMATICO;
-                        $procesa = $servicio_da->save() && $miServicio->save();    
+                        if(!$servicio_da->save()){
+                            $procesa = false;
+                            \Yii::$app->getModule('audit')->data('errorServicioDebitoAutomatico', \yii\helpers\VarDumper::dumpAsString($servicio_da->errors)); 
+                        }
+                        if(!$miServicio->save()){
+                            $procesa = false;
+                            \Yii::$app->getModule('audit')->data('errorServicioCupta', \yii\helpers\VarDumper::dumpAsString($miServicio->errors)); 
+                        }
                     }                                               
                 }    
             }
@@ -516,82 +608,3 @@ class DebitoAutomaticoService {
     
 
 }
-
-
-//
-//
-//"SELECT * FROM (
-//                    (
-//                      SELECT 
-//                            alu.id_grupofamiliar as idfamilia, 
-//                            fam.cbu_cuenta as cbu, 
-//                            sa.id as idservicio, 
-//                            (sa.importe_servicio - sa.importe_descuento - sa.importe_abonado) as monto, 
-//                            ". DebitoAutomatico::ID_TIPOSERVICIO_SERVICIOS . " as tiposervicio
-//                            B.importeadebitar as importeadebitar,
-//                            B.importeadebitar  as cantidadservicios
-//                        FROM servicio_alumno sa 
-//                        INNER JOIN alumno as alu ON (alu.id = sa.id_alumno)
-//                        INNER JOIN grupo_familiar as fam ON (fam.id = alu.id_grupofamiliar)
-//                        INNER JOIN servicio_ofrecido so ON (so.id = sa.id_servicio)                     
-//                        INNER JOIN categoria_servicio_ofrecido cts ON (cts.id = so.id_categoriaservicio)
-//                        
-//                        INNER JOIN (                            
-//                            SELECT
-//                                gf.id AS idfamilia,
-//                                COUNT(sa.id) as cantidadservicios,
-//                                SUM(sa.importe_servicio - sa.importe_descuento) AS importeadebitar
-//                            FROM
-//                                servicio_alumno sa
-//                             INNER JOIN alumno al ON (al.id = sa.id_alumno)
-//                             INNER JOIN grupo_familiar gf ON (gf.id = al.id_grupofamiliar)
-//                             INNER JOIN servicio_ofrecido so ON (so.id = sa.id_servicio)
-//                             INNER JOIN categoria_servicio_ofrecido cts ON (cts.id = so.id_categoriaservicio)
-//                               WHERE (al.activo ='1') and (gf.id_pago_asociado =  ". FormaPago::ID_DEBITO_CBU . ") and (sa.id_estado = ". EstadoServicio::ID_ABIERTA  .") and 
-//                                    ((so.fecha_vencimiento >= '".$periodoIni."') and (so.fecha_vencimiento <= '".$periodoFin."'))
-//                             GROUP BY gf.id
-//                        ) as B ON (B.idfamilia = alu.id_grupofamiliar)
-//                        WHERE (alu.activo = '1') and (fam.id_pago_asociado= ". FormaPago::ID_DEBITO_CBU . ") 
-//                        and                         
-//                       	(sa.id_estado = ". EstadoServicio::ID_ABIERTA  .") 
-//                        and ((so.fecha_vencimiento >= '".$periodoIni."') and (so.fecha_vencimiento <= '".$periodoFin."'))
-//                    ORDER BY fam.id
-//                    
-//                   )
-//                   UNION
-//                   (
-//                    SELECT 
-//                        fam.id as idfamilia, 
-//                        fam.id_pago_asociado as cbu, 
-//                        ccp.id as idservicio, 
-//                        (ccp.monto) as monto, 
-//                        " . DebitoAutomatico::ID_TIPOSERVICIO_CONVENIO_PAGO . " as tiposervicio
-//                        FROM servicio_alumno as sa 
-//                          INNER JOIN alumno as alu ON (alu.id = sa.id_alumno)
-//                          INNER JOIN grupo_familiar as fam ON (fam.id = alu.id_grupofamiliar)
-//                          INNER JOIN convenio_pago as cp ON (cp.id_familia = fam.id)
-//                          INNER JOIN cuota_convenio_pago ccp ON (ccp.	id_conveniopago  = cp.id)   
-//                        WHERE (alu.activo = '1') and (fam.id_pago_asociado = ". FormaPago::ID_DEBITO_CBU . ")
-//                        and (ccp.id_estado = 1)
-//                    
-//
-//
-//                        SELECT 
-//                        a.nrofamilia as nrofamilia, a.nrotarjeta, ccp.id as idservicio, 
-//                            (sa.importe_servicio - sa.importe_descuento - sa.importe_abonado) as monto, 
-//                            ". DebitoAutomatico::ID_TIPOSERVICIO_CONVENIO_PAGO . " as tiposervicio
-//                        FROM servicio_alumno sa 
-//              
-//                        INNER JOIN ( 
-//                            SELECT a.id as idalumno, f.id as nrofamilia, f.nro_tarjetacredito as nrotarjeta 
-//                             FROM alumno a INNER JOIN grupo_familiar f ON (f.id = a.id_grupofamiliar) 
-//                              WHERE (f.id_pago_asociado = ". FormaPago::ID_DEBITO_CBU . ") 
-//                        ) a ON (a.idalumno = sa.id_alumno) 
-//                        
-//
-//                        INNER JOIN convenio_pago cp ON cp.id_familia = a.nrofamilia
-//                        INNER JOIN cuota_convenio_pago ccp ON (ccp.	id_conveniopago  = cp.id)                     
-//                     WHERE (ccp.id_estado = ". EstadoServicio::ID_ABIERTA  .") 
-//                     and ((ccp.fecha_establecida >= '".$periodoIni."') and (ccp.fecha_establecida <= '".$periodoFin."'))
-//                    ) 
-//                ) as D";

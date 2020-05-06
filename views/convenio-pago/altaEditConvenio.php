@@ -199,7 +199,7 @@ $this->title = 'Alta Convenio Pago';
         <br />
         <div class="row">
             <div  class="col-md-8 col-md-offset-2">
-                <?= Html::submitButton('<i class=\'fa fa-save\'></i> Generar', ['id'=>'btn-envio','class' =>  'btn btn-success btnwidth100']) ?>
+                <?= Html::submitButton('<i class=\'fa fa-save\'></i> Generar', ['id'=>'btn-envio','class' =>  'btn btn-select btnwidth100 btn-submit-envio']) ?>
             </div>
         </div>
         

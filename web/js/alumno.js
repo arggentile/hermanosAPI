@@ -89,15 +89,47 @@ function activarAlumno(xhref){
     return false;       
 } 
 
+$(document).ready(function () {
+    $("body").on("click",".btn-delete-alumno", function(e){
+        e.preventDefault();
+        var href = $(this).attr('data-url');
+       
+        bootbox.confirm({
+            message: "Está seguro que desea Eliminar al Alumno?",
+            buttons: {
+                confirm: {
+                    label: '<i class="glyphicon glyphicon-ok"></i> Si',
+                    className: 'btn-success'
+                },
+                cancel: {
+                    label: '<i class="glyphicon glyphicon-remove"></i> No',
+                    className: 'btn-danger'
+                }
+            },
+            callback: function (result) {
+                if(result===true){     
+                    
+                    $("body").loading({message: 'Aguarde procesando...'});
+                    window.location.href = href;
+                  
+                }
+            }
+        });
+    
+    });
+});
+
 /****************************************************************************/
 /****************************************************************************/
 $(document).ready(function () {
     //bloquemos la pantalla cuando se realiza apetion ajaz del gri de alumnos
     $(document).on('pjax:send', '#pjax-alumnos', function() {
+        
         $('body').loading({message: 'Aguarde procesando...'});
     });       
     $(document).on('pjax:end', '#pjax-alumnos', function() {    
         $('body').loading('stop');         
+        $('#form-search-alumnos .btn-search').button('reset');
     });     
     //al finalizar lallamada ajax del render de pjax del grid de alumnos
     //actulizamos el combio de divisiones segun el establecimiento
@@ -252,14 +284,14 @@ $(document).ready(function () {
     bootbox.confirm({
         message: "Está seguro que deséa realizar la eliminación?",
         buttons: {
-            confirm: {
-                label: 'Si',
-                className: 'btn-success'
-            },
-            cancel: {
-                label: 'No',
-                className: 'btn-danger'
-            }
+                confirm: {
+                    label: '<i class="glyphicon glyphicon-ok"></i> Si',
+                    className: 'btn-success'
+                },
+                cancel: {
+                    label: '<i class="glyphicon glyphicon-remove"></i> No',
+                    className: 'btn-danger'
+                }
         },
         callback: function (result) {            
             if(result===true){

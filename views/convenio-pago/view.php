@@ -34,9 +34,14 @@ $this->title = "Convenio Pago: " . $model->id;
                             <br />
                             <div class="">
                             <?php
-                            echo Html::a('<i class="glyphicon glyphicon-trash"> </i> Eliminar', yii\helpers\Url::to(['convenio-pago/delete','id'=>$model->id]), ['class' => 'btn btn-danger']);
+                            if($model->sePuedeEditar())
+                            echo Html::a('<i class="glyphicon glyphicon-pencil"> </i>', yii\helpers\Url::to(['/convenio-pago/editar-plan-pago','id'=>$model->id]), ['class' => 'btn btn-primary']);
                             echo " ";
-                            echo Html::button('<i class="glyphicon glyphicon-print"> </i> Imprimir', ['class' => 'btn btn-info', 'id'=>'btn-pdf-convenio',
+                            if($model->sePuedeEliminar())
+                            
+                            echo Html::a('<i class="glyphicon glyphicon-trash"> </i>', yii\helpers\Url::to(['/convenio-pago/delete','id'=>$model->id]), ['class' => 'btn btn-danger']);
+                            echo " ";
+                            echo Html::button('<i class="glyphicon glyphicon-print"> </i>', ['class' => 'btn btn-info', 'id'=>'btn-pdf-convenio',
                                 'onclick'=>'js:{downPdfConvenio("'. yii\helpers\Url::to(['/convenio-pago/pdf','id'=>$model->id]) .'");}']);
                             echo " ";
                             echo Html::button('<i class="glyphicon glyphicon-envelope"> </i> Enviar Correo', ['class' => 'btn btn-info', 'id'=>'btn-correo-convenio',

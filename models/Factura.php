@@ -31,87 +31,130 @@ class Factura extends BaseFactura
     public function rules()
     {
         return ArrayHelper::merge(
-             parent::rules(),
-             [
-                  ['ptovta','safe']
-             ]
+            parent::rules(),
+            [
+                ['ptovta','safe']
+            ]
         );
     }
     
     
-    public static function GeneraFactura($ptovta, $tipodoc, $nrodoc, $monto, $tiket) {
-        ini_set('default_socket_timeout', 600);
+    /*
+     * @params ptoVta
+     * @params tipodoc  - tipo documento del cliente a generar la factura
+     * @params nrodoc   - numero del documento a informaralaafip
+     * @params monto    - monto de la factura abonado
+     * @params fecha_factura  - fecha de la realizacion del pago  - formato Y-m-d
+     * @params tike  - id del tiket asociado a la genracion de la factura 
+     */
+    
+    //a los fines practicos se debe implementar el tipo de dni cuando melo avisen
+    public static function generaFactura($ptovta, $monto, $fecha_factura, $idtiket) {        
+        $transaction = Yii::$app->db->beginTransaction();
         try{
-            $facturaAfip = new FacturaAfipService(1);
-       
-        
-            $facturaAfip->tipoDoc = 'DNI';
+            $hoyDate = date('Y-m-d');
+            //primero generamos la factura y luego nos comunicamos con la AFIP
+            //a la cuenta de registrar su exito o fracaso y registrar loslogs de erroes de factura
+            $modelFactura = new Factura();
+            $modelFactura->ptovta = (string) $ptovta;
+            $modelFactura->fecha_factura = $fecha_factura;
+            $modelFactura->informada = '0';
+            $modelFactura->fecha_informada = $hoyDate;
+            $modelFactura->monto = $monto;
+            $modelFactura->cae = '0';
+            $modelFactura->nroFactura = '0';
+            $modelFactura->id_tiket = $idtiket;
+            
+            if($modelFactura->save()){               
+                $transaction->commit();
+                $response['success']=true;
+                $response['modelFactura'] = $modelFactura;
+            }else{
+                $transaction->rollBack();
+                $response['success']=false;
+                \Yii::$app->getModule('audit')->data('errorModeloFactura', \yii\helpers\VarDumper::dumpAsString($modelFactura->errors));  
+                $response['errosModelFactura'] = $modelFactura->errors;
+            }   
+            
+            return $response;
+        }catch (GralException $e){
+            (isset($transaction) && $transaction->isActive)?$transaction->rollBack():'';
+            \Yii::$app->getModule('audit')->data('errorAction', \yii\helpers\VarDumper::dumpAsString($e));            
+            throw new GralException($e->getMessage());
+        }catch (\Exception $e){
+            (isset($transaction) && $transaction->isActive)?$transaction->rollBack():'';
+            \Yii::$app->getModule('audit')->data('errorAction', \yii\helpers\VarDumper::dumpAsString($e));
+            throw new HttpException(500, $e->getMessage());               
+        }   
+    }
+    
+    public static function avisarAfip($idfactura, $ptovta, $tipodoc, $nrodoc, $monto, $fecha_factura){
+        try{
+            $hoyDate = date('Y-m-d');
+            $hoyDateTime= date('Y-m-d H:i:s');
+            
+            $transactionFactura = Yii::$app->db->beginTransaction();
+            $modelFactura = Factura::findOne($idfactura);
+            if(!$modelFactura)
+                throw new GralException('No se encuentra la factura para avisar a la AFIP');
+            
+            $facturaAfip = new FacturaAfipService($ptovta);
+            $facturaAfip->tipoDoc = $tipodoc;
             $facturaAfip->nroDoc = str_replace("-", "", (str_replace(".", "", $nrodoc)));
             $facturaAfip->monto = $monto;        
-            $hayerrores = false;
-
-
+            $valid = false;
+                
             if ($facturaAfip->conerror === FALSE) {
-                    
                 $facturaAfip->generaFactura();
+                 
+                if ($facturaAfip->nroCae > 0) {
+                  
+//                    $fechaVencimientoCae = $facturaAfip->fechaVtoCae;
+//                    $fechaVencimientoCae = substr($fechaVencimientoCae, 6, 2) . "-" . substr($fechaVencimientoCae, 4, 2) . "-" . substr($fechaVencimientoCae, 0, 4);
+//                    $fechaVencimientoCae = \app\helpers\Fecha::formatear($fechaVencimientoCae,'d-m-Y','Y-m-d');
 
-                if ($facturaAfip->nroCae > 0){
-                    $fechaVencimientoCae = $facturaAfip->fechaVtoCae;
-
-                    $fechaVencimientoCae = substr($fechaVencimientoCae, 6, 2) . "-" . substr($fechaVencimientoCae, 4, 2) . "-" . substr($fechaVencimientoCae, 0, 4);
-                    $fechaVencimientoCae = \app\helpers\Fecha::formatear($fechaVencimientoCae,'d-m-Y','Y-m-d');
-
-                    $modelFactura = new Factura();
-                    $modelFactura->ptovta = (string) $ptovta;
-                    $modelFactura->fecha_factura = date('20170324');
-                    $modelFactura->informada = '1';
-                    $modelFactura->fecha_informada = date('20170324');
-                    $modelFactura->monto = $facturaAfip->monto;
                     $modelFactura->cae = $facturaAfip->nroCae;
                     $modelFactura->nroFactura = (string) $facturaAfip->nroFactura;
-                    $modelFactura->id_tiket = $tiket;
 
-                    if ($modelFactura->save()) {
-
-                        $hayerrores = false;
-                    } else {
-                        $hayerrores = true;
-                    }
-                } else {
-                    $hayerrores = true;
-                    /*var_dump($facturaAfip);
-                    exit;*/
+                    if ($modelFactura->save()) {                    
+                       $valid = true;
+                       $transactionFactura->commit();
+                    }else
+                        \Yii::$app->getModule('audit')->data('errorModeloFactura', \yii\helpers\VarDumper::dumpAsString($modelFactura->errors));  
                 }
-            } else {
-                var_dump($facturaAfip);
-                exit;
-                $hayerrores = true;
             }
-        
-            /*var_dump($facturaAfip->nroCae);
-            exit;*/
-            if ($hayerrores === FALSE) {
-                return $modelFactura;
-            } else {
-               /* $logs = new LogsFacturas;
-                $logs->fecha_proceso = date('Y-m-d');
-                $logs->id_tiket = $tiket;
-                $logs->nro_factura = '';
-                $logs->informacion = $facturaAfip->error;
-                $logs->save();*/
-                return null;
-            }
+            
+            if($valid){
+                $response['success'] = true;
+                $response['mensaje'] = 'Carga correcta';   
+                $response['modelsFactura'] = $modelFactura;
+            }else{
+                    $transactionLogs = Yii::$app->db->beginTransaction();
+                    $logs = new LogFactura();
+                    $logs->fecha_prueba = $hoyDateTime;
+                    $logs->id_factura  = $modelFactura->id;
+                    $logs->error  = json_encode($facturaAfip->errores);
+                    if(!$logs->save())
+                        \Yii::$app->getModule('audit')->data('errorModeloLogsFactura', \yii\helpers\VarDumper::dumpAsString($logs->errors));  
+                    $transactionLogs->commit();
+                    
+                $response['success'] = false;
+                $response['mensaje'] = 'Error';   
+                //$response['modelsFactura'] = $modelFactura;                
+            }       
+                    
+            return $response;
         }catch (GralException $e){
-            \Yii::$app->getModule('audit')->data('errorAction', \yii\helpers\VarDumper::dumpAsString($e));
-            //Yii::$app->session->setFlash('error',Yii::$app->params['operacionFallida']);  
+            \Yii::$app->getModule('audit')->data('errorAction', \yii\helpers\VarDumper::dumpAsString($e));           
             throw new GralException($e->getMessage());
         }catch (\Exception $e){
             \Yii::$app->getModule('audit')->data('errorAction', \yii\helpers\VarDumper::dumpAsString($e));
-            throw new HttpException(500, $e->getMessage());
-            //Yii::$app->session->setFlash('error',Yii::$app->params['operacionFallida']);             
+            throw new HttpException(500, $e->getMessage());            
         }   
     }
 
+    
+    
     /*     * ************************************************************ */
 
     public function getMiNroFactura() {

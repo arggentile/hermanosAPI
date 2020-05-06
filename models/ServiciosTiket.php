@@ -12,6 +12,10 @@ use yii\helpers\ArrayHelper;
 class ServiciosTiket extends BaseServiciosTiket
 {
 
+    const ID_SERVICIOS = 1;
+    const ID_CUOTA_CP = 2;
+    
+    
     public function behaviors()
     {
         return ArrayHelper::merge(

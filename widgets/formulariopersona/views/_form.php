@@ -141,7 +141,7 @@ use kartik\widgets\DatePicker;
         <div class="col-sm-4">        
             <div class="input-group">
                 <span class="input-group-addon"> <?= Html::activeLabel($model, 'mail', ['class' => 'control-label']) ?> </span>
-                <?php echo Html::activeInput('text', $model, 'mail',['class'=>'form-control', 'placeholder'=>'Email']); ?>
+                <?php echo Html::activeInput('text', $model, 'mail', ['class'=>'form-control', 'placeholder'=>'Email','type'=>'email']); ?>
             </div>
             <?= Html::error($model, 'mail',['class'=>'text-error text-red']); ?>
         </div>

@@ -69,12 +69,9 @@ $this->params['breadcrumbs'][] = $this->title;
                                         echo Html::a('<i class="fa fa-pencil"></i>', ['empadronamiento', 'id' => $model->id], ['class' => 'btn btn-primary']); ?>
                                     <?php 
                                     if(Yii::$app->user->can('eliminarAlumno'))
-                                        echo Html::a('<i class="fa fa-trash-o"></i>', ['delete', 'id' => $model->id], [
-                                            'class' => 'btn btn-danger',
-                                            'data' => [
-                                                'confirm' => 'Está seguro que desea eliminar al Alumno?',
-                                                'method' => 'post',
-                                            ],
+                                        echo Html::a('<i class="fa fa-trash-o"></i>', 'javascript:void(0)', [
+                                            'data-url' =>  Url::to(['delete', 'id' => $model->id]),
+                                            'class' => 'btn btn-danger btn-delete-alumno'
                                         ]); ?>
                                     
                                     </p>

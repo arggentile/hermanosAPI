@@ -31,6 +31,14 @@ class ServicioOfrecidoServices {
             if(empty($model))
                 throw new GralException('No se encontró el Servicio a eliminar');
             
+            $serviciosDevengados = ServicioAlumno::find()->andWhere(['id_servicio'=>$id])->all();
+            if(count($serviciosDevengados)>0)
+                throw new GralException('No se puede realizar la eliminación; el servicio dispone de servicios devengados.');
+                
+            $divisionesAsociadas = \app\models\ServicioDivisionEscolar::find()->andWhere(['id_servicio'=>$id])->all();
+            if(count($divisionesAsociadas)>0)
+                throw new GralException('No se puede realizar la eliminación; el servicio a sido asignado a Establecimientos para su posterior devengamiento.');
+             
             if($model->delete()){
                 $transaction->commit();
                 $response['success'] = true;
@@ -238,10 +246,7 @@ class ServicioOfrecidoServices {
                     LEFT JOIN servicio_alumno AS sa ON (sa.id_servicio = so.id and sa.id_alumno = a.id)
                    
                     INNER JOIN 
-                    (	SELECT fam.id as id_familia, count(al.id_grupofamiliar)  as canthijosfamilia
-                     	  FROM grupo_familiar fam
-                     	  INNER JOIN alumno al ON (al.id_grupofamiliar = fam.id)
-                     	  GROUP BY al.id_grupofamiliar
+                    (	SELECT al.id_grupofamiliar as id_familia, count(al.id_grupofamiliar) as canthijosfamilia FROM alumno al INNER JOIN grupo_familiar fam ON (al.id_grupofamiliar = fam.id) WHERE al.activo = '1' and (al.egresado='0' or egresado is null) GROUP BY al.id_grupofamiliar ORDER BY `id_familia` ASC
                     ) as B ON (B.id_familia = a.id_grupofamiliar)";
             
             $where = 'WHERE sa.id is null';
@@ -283,12 +288,22 @@ class ServicioOfrecidoServices {
                     
                     //colocamos los descuentos aplicados a cada alumno en particular
                     $descuentosAlumno = \app\models\BonificacionAlumno::find()->where('id_alumno='. $servicio['idalumno'])->all();
+                    
+                    if($servicio['canthijosfamilia']>=4)
+                            $bonificacionesFamiliares  = \app\models\Bonificaciones::find()
+                                ->andWhere(['activa'=>'1'])
+                                ->andWhere(['cantidad_hermanos'=>4])->one();
+                    else
+                        $bonificacionFamiliar  = \app\models\Bonificaciones::find()
+                                ->andWhere(['activa'=>'1'])
+                                ->andWhere(['cantidad_hermanos'=>$servicio['canthijosfamilia']])->one();
+                    
                     if(!empty($descuentosAlumno)){
                         foreach($descuentosAlumno as $descuento) {
                             //
                             $modelDescuentoServicio = new \app\models\BonificacionServicioAlumno();
                             $modelDescuentoServicio->id_bonificacion = $descuento->id_bonificacion;
-                            $bonificacion = \app\models\CategoriaBonificacion::findOne($descuento->id_bonificacion); 
+                            $bonificacion = \app\models\Bonificaciones::findOne($descuento->id_bonificacion); 
                             $modelDescuentoServicio->id_servicioalumno = $modelServicio->id;
                             $total_descuentos += $bonificacion->valor;
                             $valid = $valid && $modelDescuentoServicio->save();
@@ -298,30 +313,21 @@ class ServicioOfrecidoServices {
                         }
                     }
                     
-                    
-                    //colocamos los descuentos automaticos segun cantidad de hijos
-                    if($descuentoFamiliaAutomatico){
-                        if($servicio['montoservicio']==2)
-                            $modelDescuento = \app\models\CategoriaBonificacion::findOne(1); 
-                        elseif($servicio['montoservicio']==3)
-                            $modelDescuento = \app\models\CategoriaBonificacion::findOne(2); 
-                        elseif($servicio['montoservicio']>=4)
-                            $modelDescuento = \app\models\CategoriaBonificacion::findOne(3); 
-
-
+                     if(!empty($bonificacionFamiliar)){
                         $modelDescuentoServicio = new \app\models\BonificacionServicioAlumno();
-                        $modelDescuentoServicio->id_bonificacion = $modelDescuento->id;
+                        $modelDescuentoServicio->id_bonificacion = $bonificacionFamiliar->id;
                         $modelDescuentoServicio->id_servicioalumno = $modelServicio->id;
-                        $total_descuentos += $modelDescuento->valor;
+                        $total_descuentos += $bonificacionFamiliar->valor;
                         $valid = $valid && $modelDescuentoServicio->save();
                         if(!$valid){
                             \Yii::$app->getModule('audit')->data('errorAction', \yii\helpers\VarDumper::dumpAsString($modelDescuentoServicio->getErrors()));      
-                        }
+                            }                        
                     }
                     
                     
-                    
                     $modelServicio->importe_descuento = ( $modelServicio->importe_servicio * $total_descuentos) / 100;
+                    if($modelServicio->importe_descuento>=$modelServicio->importe_servicio)
+                        $modelServicio->id_estado = EstadoServicio::ID_DESCONTADA;
                     $valid = $valid && $modelServicio->save();
                     if(!$valid){
                         \Yii::$app->getModule('audit')->data('errorAction', \yii\helpers\VarDumper::dumpAsString($modelServicio->getErrors()));      
@@ -397,55 +403,4 @@ class ServicioOfrecidoServices {
     }
     
     
-    /*
-    public function eliminarServicioAlumnoDevengado($idServicioAlumno){
-        try{ 
-            //$connection= \Yii::$app->db;   
-            $transaction = Yii::$app->db->beginTransaction();
-            
-            $modelServicoAlumno = ServicioAlumno::findOne($idServicioAlumno);
-            if(!$modelServicoAlumno)
-                throw new \yii\web\HttpException(400, "No se encontro el modelo del servicio a eliminar.");
-            
-            
-            if($modelServicoAlumno->importe_abonado > 0 || !$modelServicoAlumno->id_estado !== EstadoServicio::ID_ABIERTA ){
-                $valid = false;
-                $txt_resultado = 'No se puede eliminar el servicio, el mismo dispone de pago realizados, '
-                        . 'o se encunetra en un estado que no permite su eliminación';
-            } else{
-              if($modelServicoAlumno->delete()){
-                  $valid = true;
-                  $txt_resultado='Eliminación correcta';
-              }else{
-                  $valid=false;
-                  $txt_resultado=$modelServicoAlumno->getErrors();
-              }
-                  
-            }
-                
-            if ($valid){                
-                $transaction->commit();
-                $response['result'] = true;
-                $response['model'] = null;
-                $response['error'] = false;
-                $response['mensaje'] = $txt_resultado;
-            }else{
-                if ($transaction->isActive)$transaction->rollBack();
-                $response['result'] = false;
-                $response['model'] = null;
-                $response['error'] = true;
-                $response['mensaje'] = $txt_resultado;
-            }                
-            
-            
-          return $response;
-           
-        }catch (Exception $e) {
-            if ($transaction->isActive)
-                $transaction->rollBack();
-            \Yii::$app->getModule('audit')->data('catchedexc', \yii\helpers\VarDumper::dumpAsString($e));
-            throw new \yii\web\HttpException(500, "Error interno al procesar la solicitud.");
-        }
-    }*/
-
 }

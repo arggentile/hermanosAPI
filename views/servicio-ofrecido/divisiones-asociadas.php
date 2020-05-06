@@ -27,7 +27,7 @@ $this->params['breadcrumbs'][] = $this->title;
                 <i class="fa fa-cogs"></i> <h3 class="box-title"> Divisiones Escolares Asociadas </h3> 
                 <div class="pull-right">
                     <p>
-                    <?=  Html::button('<i class="fa fa-plus-square"></i> Administrar Servicio', 
+                    <?=  Html::button('<i class="fa fa-plus-square"></i> Administrar', 
                             //['/establecimiento/nuevo-servicio','id_establecimiento'=>$modelEstablecimiento->id], 
                             ['class' => 'btn btn-default btn-alta btn-asociardivision',
                               'data-xhref'=>\yii\helpers\Url::to(['/servicio-ofrecido/asociar-division','id'=>$model->id])]) ?>

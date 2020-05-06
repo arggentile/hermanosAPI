@@ -18,7 +18,7 @@ $this->params['breadcrumbs'][] = $this->title;
         <p class="pull-right">
             <?php
             if(Yii::$app->user->can('cargarEstablecimiento'))
-                echo Html::a('<i class="glyphicon glyphicon-plus"></i> Alta', ['alta'], ['class' => 'btn btn-xs btn-success btn-alta']) ?>
+                echo Html::a('<i class="glyphicon glyphicon-plus"></i> Alta', ['alta'], ['class' => 'btn btn-primary btn-xs btn-alta-listado']) ?>
           </p>
     </div>
     <div class="box-body">         

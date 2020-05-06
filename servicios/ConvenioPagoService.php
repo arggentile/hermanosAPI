@@ -33,23 +33,20 @@ use app\helpers\GralException;
 class ConvenioPagoService {
 
     
-    /**************************************************************/
+    
     public static function eliminarConvenio($id){        
         try{
             $transaction = Yii::$app->db->beginTransaction(); 
             $model = ConvenioPago::findOne($id);
             if(empty($model))
-                throw new GralException('No se encontró el Convenio a eliminar');
+                throw new GralException('No se encontró el Convenio de Pago a eliminar');
             
             $valid  = true;
             
-            $cuotasConvenio = CuotaConvenioPago::find()
-                    ->andWhere(['id_conveniopago'=>$id])
-                    ->andWhere(['!=','id_estado', EstadoServicio::ID_ABIERTA])->all();
-            
-            if(!empty($cuotasConvenio) || $model->sePuedeEditar()){
+            $cuotasPendientesConvenio =$model->sePuedeEliminar();
+            if($cuotasPendientesConvenio==0)
                 throw new GralException('No se puede realizar la eliminación, el convenio de pago dispone de cuotas ABONADAS o en DEBITO AUTOMATICO.');
-            }
+            
             $cuotasConvenio = CuotaConvenioPago::find()->andWhere(['id_conveniopago'=>$id])->all();
             if(!empty($cuotasConvenio))
                 foreach($cuotasConvenio as $cuota)
@@ -92,7 +89,7 @@ class ConvenioPagoService {
         }              
     }
     
-    /**************************************************************/
+    
     public function altaConvenioPago(ConvenioPago $dataModelConvenioPago, $dataServiciosConvenioPago = null, $dataCuotasConvenioPago = null)
     {
         $transaction = Yii::$app->db->beginTransaction();

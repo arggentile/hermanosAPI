@@ -52,11 +52,16 @@ use yii\widgets\ActiveForm;
                     'header'=>\dmstr\helpers\Html::dropDownList('tipores','',app\models\TipoResponsable::getTipoResponsables(),['class'=>'','id'=>'tipores']) ,
                     'buttons' => [                                    
                         'select' => function ($url, $model, $key) { 
-                            return Html::button('Asignar', 
-                                ['value'=> Url::to(['grupo-familiar/asignar-responsable', 'idresponsable'=>$model['id']]),
+                            return Html::button('Responsable', 
+                                ['value'=> Url::to(['grupo-familiar/asignar-responsable', 'responsable'=>'1','idresponsable'=>$model['id']]),
                                  'class' => 'btn btn-select btn-xs bt-asign-responsablefamilia',
                                  'onclick'=>'js:{asignarResponsable(this);}'    
-                                ]);
+                                ]) . " ". 
+                                Html::button('Integrante', 
+                                ['value'=> Url::to(['grupo-familiar/asignar-responsable', 'responsable'=>'0','idresponsable'=>$model['id']]),
+                                 'class' => 'btn btn-select btn-xs bt-asign-responsablefamilia',
+                                 'onclick'=>'js:{asignarResponsable(this);}'    
+                                ]) ;   
 
                         }
                     ],                            

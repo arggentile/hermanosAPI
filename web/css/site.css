@@ -164,6 +164,12 @@ a.desc:after {
     background-color: #446e86 !important;
 }
 
+.box.box-colegio{
+    border-top-color: #446e86 !important;
+}
+.box.box-colegio .box-title, .box.box-colegio .box-header{
+    color: #446e86 !important;
+}
 
 /* botones generales */
 .btn-search{

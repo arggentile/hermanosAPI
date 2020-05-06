@@ -181,8 +181,7 @@ class ConvenioPagoController extends Controller
      * @return mixed
      */
     public function actionView(){
-        try{
-        
+        try{        
             $id = Yii::$app->request->get('id');
             $modelConvenioPago = $this->findModel($id);  
         
@@ -213,8 +212,7 @@ class ConvenioPagoController extends Controller
         return $this->render('view', [
             'model' => $this->findModel($id),
             'misServicios'=>$misServicios,
-            'misCuotas'=>$misCuotas,
-            
+            'misCuotas'=>$misCuotas,            
         ]);
     }    
     
@@ -618,7 +616,7 @@ class ConvenioPagoController extends Controller
             $html .= '<thead>                  
               <tr>
                     <th align="center"><b> CONVENIO PAGO Nº '. $idConvenio.' <br />' . date('d-m-Y') . '</b></th>
-                    <th align="center"><img src="./images/logodonbsco2.png" width="150" height="150" /></th>
+                    <th align="center"><img src="./images/logodonbsco2.png" width="75" height="75" /></th>
               </tr>
               <tr>
                     <th style="padding:5px;" colspan="2"> <b>FAMILIA: </b>' . $clienteConvenio->apellidos . ', ' . $clienteConvenio->folio . '<br /><br />
@@ -855,9 +853,9 @@ class ConvenioPagoController extends Controller
             $objPHPExcel->getActiveSheet()->getColumnDimension('F')->setAutoSize(true);
             $objPHPExcel->getActiveSheet()->getColumnDimension('G')->setAutoSize(true);
             $objPHPExcel->getActiveSheet()->getColumnDimension('H')->setAutoSize(true);
-            /*$objPHPExcel->getActiveSheet()->getColumnDimension('I')->setAutoSize(true);
+            $objPHPExcel->getActiveSheet()->getColumnDimension('I')->setAutoSize(true);
             $objPHPExcel->getActiveSheet()->getColumnDimension('J')->setAutoSize(true);
-            $objPHPExcel->getActiveSheet()->getColumnDimension('K')->setAutoSize(true);
+            /*$objPHPExcel->getActiveSheet()->getColumnDimension('K')->setAutoSize(true);
             $objPHPExcel->getActiveSheet()->getColumnDimension('L')->setAutoSize(true);
             $objPHPExcel->getActiveSheet()->getColumnDimension('M')->setAutoSize(true);*/
 
@@ -869,21 +867,22 @@ class ConvenioPagoController extends Controller
             $this->cellColor($objPHPExcel, 'F1', 'F28A8C');
             $this->cellColor($objPHPExcel, 'G1', 'F28A8C');
             $this->cellColor($objPHPExcel, 'H1', 'F28A8C');
-            /*$this->cellColor($objPHPExcel, 'I1', 'F28A8C');
+            $this->cellColor($objPHPExcel, 'I1', 'F28A8C');
             $this->cellColor($objPHPExcel, 'J1', 'F28A8C');
-            $this->cellColor($objPHPExcel, 'K1', 'F28A8C');
+            /*$this->cellColor($objPHPExcel, 'K1', 'F28A8C');
             $this->cellColor($objPHPExcel, 'L1', 'F28A8C');
             $this->cellColor($objPHPExcel, 'M1', 'F28A8C');*/
 
             $objPHPExcel->getActiveSheet()->setCellValue('A1', 'Nro');
             $objPHPExcel->getActiveSheet()->setCellValue('B1', 'Nombre/Descripcion');
             $objPHPExcel->getActiveSheet()->setCellValue('C1', 'Fecha Alta');
-            $objPHPExcel->getActiveSheet()->setCellValue('D1', 'Familia');
-            $objPHPExcel->getActiveSheet()->setCellValue('E1', 'Saldo');
-            $objPHPExcel->getActiveSheet()->setCellValue('F1', 'Deb. Automatico');
-            $objPHPExcel->getActiveSheet()->setCellValue('G1', 'Cant. Cuotas');
-            $objPHPExcel->getActiveSheet()->setCellValue('H1', 'Cuotas Impagas');
-
+            $objPHPExcel->getActiveSheet()->setCellValue('D1', 'Folio');
+            $objPHPExcel->getActiveSheet()->setCellValue('E1', 'Familia');
+            $objPHPExcel->getActiveSheet()->setCellValue('F1', 'Saldo');
+            $objPHPExcel->getActiveSheet()->setCellValue('G1', 'Deb. Automatico');
+            $objPHPExcel->getActiveSheet()->setCellValue('H1', 'Cant. Cuotas');
+            $objPHPExcel->getActiveSheet()->setCellValue('I1', 'Cuotas Impagas');
+            $objPHPExcel->getActiveSheet()->setCellValue('J1', 'Saldo Abonado');
 
             $letracolumnainicio = 'A';
             $letrafilainicio = 3;
@@ -899,27 +898,28 @@ class ConvenioPagoController extends Controller
                     $columnaF = 'F' . $letrafilainicio1;
                     $columnaG = 'G' . $letrafilainicio1;
                     $columnaH = 'H' . $letrafilainicio1;
-                   /* $columnaI = 'I' . $letrafilainicio1;
+                    $columnaI = 'I' . $letrafilainicio1;
                     $columnaJ = 'J' . $letrafilainicio1;
-                    $columnaK = 'K' . $letrafilainicio1;
+                    /*$columnaK = 'K' . $letrafilainicio1;
                     $columnaL = 'L' . $letrafilainicio1;
                     $columnaM = 'M' . $letrafilainicio1;*/
 
                     $objPHPExcel->getActiveSheet()->setCellValue($columnaA, $convenio->id);
                     $objPHPExcel->getActiveSheet()->setCellValue($columnaB, $convenio->nombre);
-                    $objPHPExcel->getActiveSheet()->setCellValue($columnaC, $convenio->fecha_alta );
-                    $objPHPExcel->getActiveSheet()->setCellValue($columnaD, $convenio->familia->apellidos);
-
-                    $objPHPExcel->getActiveSheet()->setCellValue($columnaE, $convenio->saldo_pagar );
+                    $objPHPExcel->getActiveSheet()->setCellValue($columnaC, \app\helpers\Fecha::formatear($convenio->fecha_alta, 'Y-m-d','d-m-Y')  );
+                    $objPHPExcel->getActiveSheet()->setCellValue($columnaD, $convenio->familia->folio);
+                    $objPHPExcel->getActiveSheet()->setCellValue($columnaE, $convenio->familia->apellidos);
+                    $objPHPExcel->getActiveSheet()->setCellValue($columnaF, $convenio->saldo_pagar );
 
                     if ($convenio->deb_automatico == '1') {                        
-                        $objPHPExcel->getActiveSheet()->setCellValue($columnaF, "SI");
+                        $objPHPExcel->getActiveSheet()->setCellValue($columnaG, "SI");
                     } else {                       
-                        $objPHPExcel->getActiveSheet()->setCellValue($columnaF, "NO");
+                        $objPHPExcel->getActiveSheet()->setCellValue($columnaG, "NO");
                     }
 
-                    $objPHPExcel->getActiveSheet()->setCellValue($columnaG, $convenio->cantCuotas );
-                    $objPHPExcel->getActiveSheet()->setCellValue($columnaH, $convenio->cuotasPendientes );
+                    $objPHPExcel->getActiveSheet()->setCellValue($columnaH, $convenio->cantCuotas );
+                    $objPHPExcel->getActiveSheet()->setCellValue($columnaI, $convenio->cuotasPendientes );
+                    $objPHPExcel->getActiveSheet()->setCellValue($columnaJ, $convenio->getSaldoAbonado() );
                     $i = $i + 1;
                     $letrafilainicio += 1;
                 }  

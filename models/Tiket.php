@@ -12,14 +12,9 @@ use yii\helpers\ArrayHelper;
 class Tiket extends BaseTiket
 {
    
-    public $cantidad_servicios;
-    public $importe_servicios;
+    public $importe_servicios;    
+    public $dni_cliente;
     
-    public $monto_afavor;
-    public $importe_abonado;
-    public $pagototal;
-    
-    public $errorimportes;
     
     public function behaviors()
     {
@@ -31,6 +26,7 @@ class Tiket extends BaseTiket
         );
     }   
     
+    
     public function attributeLabels()
     {
         return ArrayHelper::merge(
@@ -38,7 +34,8 @@ class Tiket extends BaseTiket
              [
               'id_cuentapagadora' => 'Cuenta/Caja',
               'id_tipopago' => 'Medio Pago',
-              'xfecha_tiket' => 'Fecha Tiket',              
+              'xfecha_tiket' => 'Fecha Tiket',     
+              'dni_clientes'=>'Dni Cliente'
              ]
         );
     }
@@ -50,17 +47,26 @@ class Tiket extends BaseTiket
              [                
                 [['fecha_tiket'], 'date', 'format' => 'php:Y-m-d'],                               
                 [['xfecha_tiket'], 'date', 'format' => 'php:d-m-Y', 'message'=>'Ingrese una Fecha Valida'],                              
-                [['xfecha_tiket','detalles','monto_afavor','importe_abonado'],'required'],
-                [['fecha_tiket'],'rulesFechaPagoHabil'],
-                [['pagototal','errorimportes','importe_servicios','cantidad_servicios'],'safe'],
+                [['xfecha_tiket','detalles'],'required'],
+                [['importe_servicios','dni_cliente'],'safe'],
+                ['dni_cliente','required'],
+                [['dni_cliente'],'rulesDniValido'],
                 
                 [['fecha_tiket'],'rulesFechaPagoHabilitado'],
-                [['importe'],'rulesControlImportesAbonado'], 
+                //[['importe'],'rulesControlImportesAbonado'], 
              ]
         );
     }
-    
-    
+     
+    public function attributes() {
+        return ArrayHelper::merge(
+             parent::attributes(),
+             [
+             'dni_cliente'
+             ]
+        );
+    }
+
     public function getXfecha_tiket()
     {
         if (!empty($this->fecha_tiket) && $valor = Fecha::convertirFecha($this->fecha_tiket,"Y-m-d","d-m-Y"))
@@ -81,38 +87,32 @@ class Tiket extends BaseTiket
         }
     }
     
-    public function rulesFechaPagoHabil() {
-        if(Fecha::esFechaMayor(date('Y-m-d'), $this->fecha_tiket)){
-            $this->addError('xfecha_tiket', 'La fecha del Tiket debe ser menor a la fecha Actual.');
-        }  
-       
-    }
     
     public function rulesFechaPagoHabilitado() {
         if(Fecha::esFechaMayor(date('Y-m-d'), $this->fecha_tiket)){
-            $this->addError('xfecha_tiket', 'La fecha del Tiket debe ser menor a la fecha Actual.');
+            $this->addError('xfecha_tiket', 'Fecha invalida. Fecha futura.');
         }  
        
     }    
     
-    
-    public function rulesControlImportesAbonado() {
-        if (($this->cantidadservicios==0)){
-            $this->addError('errorimportes', 'Seleccione al menos un servicio a abonar.');                
-        }
-        if (($this->cantidadservicios>1) && ( ($this->importe_abonado + $this->monto_afavor) < $this->importe)){
-            $this->addError('errorimportes', 'El pago parcial solo está permitido para un unico Servicio.');                
-        }
-        
-        if ((($this->importe_abonado + $this->monto_afavor) > $this->importe) && ($this->monto_afavor>0)){
-            $this->addError('errorimportes', 'La suma del importe abonado y el saldo a favor no debe superar el iomporte del tiket. Al utilizar monto a favor del abogado; la suma de los importes abonados debe er igual omenor');                
-        }
-        
-        /*
-         * el saldo a favor del abogado a descontar nunca pueda ser mayor que el importe del tiket
-         */
-        if ($this->monto_afavor > $this->importe){
-            $this->addError('monto_afavor', 'El monto del Saldo a favor nunca puede superar el importe del Tiket.');                
-        }
+    public function rulesDniValido() {
+        if(!empty($this->dni_cliente)){
+            if(!is_numeric($this->dni_cliente))
+                $this->addError('dni_cliente','Invalido solo adminite digitos.');
+            
+            if(strlen($this->dni_cliente)!==11)
+                $this->addError('dni_cliente','El CUIL debe poseer 11 digitos');
+            
+           
+        }    
     }
+   
+      /**
+     * @return \yii\db\ActiveQuery
+     */
+    public function getGrupoFamiliar()
+    {
+        return $this->hasOne(\app\models\GrupoFamiliar::className(), ['id' => 'id_cliente']);
+    }
+
 }

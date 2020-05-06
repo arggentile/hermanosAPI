@@ -18,6 +18,8 @@ class EstadoServicio extends BaseEstadoServicio
     const ID_ABONADA_EN_DEBITOAUTOMATICO = 4; //'PA/DA';
     const ID_EN_CONVENIOPAGO = 5; //'CP';  
     const ID_ABONADA_EN_CONVENIOPAGO = 6; //'PA/CP';
+    const ID_DESCONTADA = 7; //'A'; //abierta libre asignar 
+    
     
     public function behaviors()
     {

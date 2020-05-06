@@ -50,30 +50,30 @@ $('#formEgresoAlumnos').on('beforeSubmit', function (e) {
 
             var estabInicial = $('#establecimiento-egreso-inicial').val();
             var divisionInicial = $('#division-egreso-inicial').val();
-            var estabEgreso = $('#alumno-establecimiento option:selected').html();
-            var divisionEgreso = $('#alumno-id_divisionescolar option:selected').html();
+            var estabEgreso = $('#egresoalumnoform-id_establecimiento option:selected').html();
+            var divisionEgreso = $('#egresoalumnoform-id_divisionescolar option:selected').html();
             var tipoegreso = $('#egresoalumnoform-es_egreso').val();
             
             if(tipoegreso=='1'){
-                var mensajeAdvertir = 'Está seguro que desea egresar del Establecimiento los alumnos';
+                var mensajeAdvertir = '<p style="font-size:16px"> Está seguro que desea "Egresar del Establecimiento" el/los alumnos. <br />';
+                mensajeAdvertir += ' Este proceso Inactivara al el/los Alumnos</p>';
             }
             else{    
-                var mensajeAdvertir = 'Está seguro que desea migrar los alumnos de:' + divisionInicial + '('+ estabInicial +')'
-                 + ' a la división ' + divisionEgreso + ' (' + estabEgreso + ')?';
+                var mensajeAdvertir = '<p style="font-size:16px"> Está seguro que desea migrar los alumnos de:' + divisionInicial + '('+ estabInicial +')'
+                 + ' a la división ' + divisionEgreso + ' (' + estabEgreso + ')?</p>';
             }
 
             bootbox.confirm({
                 message: mensajeAdvertir,
                 buttons: {
                     confirm: {
-                        label: 'Si',
-                        className: 'btn-success'
-                    },
-                    cancel: {
-                        label: 'No',
-                        className: 'btn-danger'
-
-                    }
+                    label: '<i class="glyphicon glyphicon-ok"></i> Si',
+                    className: 'btn-success'
+                },
+                cancel: {
+                    label: '<i class="glyphicon glyphicon-remove"></i> No',
+                    className: 'btn-danger'
+                }
                 },
                 callback: function (result) {  
                     if(result===true){                

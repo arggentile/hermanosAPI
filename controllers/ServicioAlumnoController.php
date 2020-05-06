@@ -26,6 +26,11 @@ class ServicioAlumnoController extends Controller
             'access' => [
                 'class' => \yii\filters\AccessControl::className(),
                 'rules' => [
+                     [      
+                        'actions' => ['reporte'],   
+                        'allow' => true,
+                        //'roles' => ['eliminarServicioAlumno'],
+                    ],
                     [      
                         'actions' => ['down-listado-servicios-alumno'],   
                         'allow' => true,
@@ -147,9 +152,21 @@ class ServicioAlumnoController extends Controller
     /******************** Reporte General *** **************************/            
     public function actionReporte()
     {
-        $searchModel = new ServicioAlumnoSearch();
-        $dataProvider = $searchModel->search(Yii::$app->request->post());
-
+        try{
+            $searchModel = new ServicioAlumnoSearch();
+            $dataProvider = $searchModel->search(Yii::$app->request->get());
+        }catch (GralException $e) { 
+            (isset($transaction) && $transaction->isActive)?$transaction->rollBack():'';
+            \Yii::$app->getModule('audit')->data('errorAction', \yii\helpers\VarDumper::dumpAsString($e));  
+            //Yii::$app->session->setFlash('error', $e->getMessage());
+            throw new GralException('Error: ' . $e->getMessage());                          
+        }catch (\Exception $e) { 
+            (isset($transaction) && $transaction->isActive)?$transaction->rollBack():'';
+            \Yii::$app->getModule('audit')->data('errorAction', \yii\helpers\VarDumper::dumpAsString($e));  
+            //Yii::$app->session->setFlash('error', Yii::$app->params['operacionFallida']);
+            throw new yii\web\HttpException(500, 'Error severo.');                     
+        }
+        
         return $this->render('reporte', [
             'searchModel' => $searchModel,
             'dataProvider' => $dataProvider,

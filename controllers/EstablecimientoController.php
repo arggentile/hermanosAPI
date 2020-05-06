@@ -25,9 +25,6 @@ use app\helpers\GralException;
 class EstablecimientoController extends Controller
 {
     
-    
-    
-    
     /**
      * @inheritdoc
      */

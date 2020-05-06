@@ -19,7 +19,11 @@ $this->title = 'Alta Convenio Pago';
     <div class="box-body">    
 
     <div class="convenio-pago-form">
-        <?php $form = ActiveForm::begin(['id'=>'form-convenio','type' => ActiveForm::TYPE_HORIZONTAL]); ?>
+        <?php 
+        $form = ActiveForm::begin([
+                'id'=>'form-convenio',
+                'type' => ActiveForm::TYPE_HORIZONTAL
+            ]); ?>
         <input type="hidden" name="ordn" id="ordn" value="<?php echo count($modelCuotasConvenioPago); ?>" />
         
         <div class="row">
@@ -77,7 +81,9 @@ $this->title = 'Alta Convenio Pago';
         <br />
         <div class="row">
             <div  class="col-md-8 col-md-offset-2">
-                <?= Html::submitButton('<i class=\'fa fa-save\'></i> Generar', ['id'=>'btn-envio','class' =>  'btn btn-success btnwidth100']) ?>
+                <?= Html::submitButton('<i class=\'fa fa-save\'></i> Generar', 
+                        ['data-loading-text'=>'Aguarde...',
+                         'class' =>  'btn btn-select btnwidth100 btn-submit-envio']) ?>
             </div>
         </div>
         

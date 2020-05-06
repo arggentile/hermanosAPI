@@ -21,7 +21,7 @@ $this->params['breadcrumbs'][] = $this->title;
 
     <div class="box box-default">
         <div class="box-header with-border">
-            <i class="fa fa-support"></i> <h3 class="box-title"> Pagos Habilitados </h3>      
+            <i class="glyphicon glyphicon-wrench"></i> <h3 class="box-title"> Pagos Habilitados </h3>      
         </div>
         <div class="box-body">
             

@@ -85,30 +85,39 @@ class ConvenioPago extends BaseConvenioPago
         else
             return false;
     }
-    
-    public function getCantCuotas(){
-        if(!empty($this->id)){
-        $convenio = $this->id;             
-
-        $cuotas = CuotaConvenioPago::find()->where("id_conveniopago = ".$convenio)->all();
-
-        return count($cuotas);
-        }else
-            return "";            
+    public function sePuedeEliminar(){
+        if($this->getCantCuotas() == $this->getCuotasPendientes())
+            return true;
+        else
+            return false;
     }
     
-    public function getCuotasPendientes(){
-        if(!empty($this->id)){
-            $convenio = $this->id;     
-            $abiertas = [EstadoServicio::ID_ABIERTA, EstadoServicio::ID_EN_CONVENIOPAGO, EstadoServicio::ID_EN_DEBITOAUTOMATICO];
-            $cuotasVencidas = CuotaConvenioPago::find()
-                    ->andWhere(["in", "id_estado", $abiertas])->andWhere(["id_conveniopago" => $convenio])->all();
-            if(empty($cuotasVencidas)){
-                 return 0;
-            }else{
-                return count($cuotasVencidas); 
-            }          
-        }else
-            return "";            
+    public function getCantCuotas(){
+        $convenio = $this->id;             
+        $cuotas = CuotaConvenioPago::find()->where("id_conveniopago = ".$convenio)->all();
+        return count($cuotas);
+    }
+    
+    public function getCuotasPendientes(){        
+        $convenio = $this->id;     
+        $abiertas = [EstadoServicio::ID_ABIERTA, EstadoServicio::ID_EN_CONVENIOPAGO, EstadoServicio::ID_EN_DEBITOAUTOMATICO];
+        $cuotasVencidas = CuotaConvenioPago::find()
+                ->andWhere(["in", "id_estado", $abiertas])->andWhere(["id_conveniopago" => $convenio])->all();
+        if(empty($cuotasVencidas)){
+             return 0;
+        }else{
+            return count($cuotasVencidas); 
+        }          
     } 
+    
+    public function getSaldoAbonado(){
+        $saldo = 0;
+        $abiertas = [EstadoServicio::ID_ABONADA, EstadoServicio::ID_ABONADA_EN_CONVENIOPAGO, EstadoServicio::ID_ABONADA_EN_DEBITOAUTOMATICO];
+        $cuotas = CuotaConvenioPago::find()
+                ->andWhere(["in", "id_estado", $abiertas])->andWhere(["id_conveniopago" => $this->id])->all();
+        if(!empty($cuotas))
+            foreach($cuotas as $cuota)
+                $saldo += $cuota->monto;
+        return $saldo;            
+    }
 }

@@ -24,6 +24,7 @@ class DescargaPadronExcelAction extends Action {
     
     public function run()
     {       
+       
             $archivo = Yii::$app->request->get('archivo');     
             ob_start();
             //$name = $_GET["id"];        

@@ -57,7 +57,7 @@ use yii\helpers\Html;
                 <?= $form->field($model, 'id_estado',[
                     'horizontalCssClasses' => [
                                         'wrapper' => 'col-sm-6', 'label' => 'col-sm-3',
-                                    ]])->dropDownList( app\models\EstadoServicio::getEstadoServicios(),
+                                    ]])->dropDownList( [\app\models\EstadoServicio::ID_ABIERTA =>'Adeuda', \app\models\EstadoServicio::ID_ABONADA => 'Abonada'],
                         ['prompt'=>'Seleccione...'])->label('Estado') ?>
         </div>
     </div>

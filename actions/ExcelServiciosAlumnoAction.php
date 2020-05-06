@@ -25,11 +25,7 @@ use app\models\search\ServicioAlumnoSearch;
 use app\models\Alumno;
 use app\models\search\AlumnoSearch;
 
-/**
- * Acción reutilizable para la búsqueda de legajos
- *
- * @author mboisselier
- */
+
 class ExcelServiciosAlumnoAction extends Action
 {
     public function run()

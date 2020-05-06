@@ -22,13 +22,10 @@ use yii\widgets\Pjax;
         <?php
             if(Yii::$app->user->can('gestionarServicios')){
                 echo Html::a('<i class="fa fa-trash-o"></i> Eliminar', 
-                    ['delete', 'id' => $model->id], 
+                    'javascript:void(0)', 
                     [
-                        'class' => '',
-                        'data' => [
-                            'confirm' => 'Está seguro que desea eliminar el servicio?',
-                            'method' => 'post',
-                        ]
+                        'data-url'=> yii\helpers\Url::to(['delete', 'id' => $model->id]),
+                        'class' => 'btn-eliminar-servicioofrecido',
                     ]);
                     }?>
         </li>              
@@ -46,7 +43,8 @@ use yii\widgets\Pjax;
     <div class="col-sm-8 col-sm-offset-2 col-xs-12">
         <table>
             <tr>
-                <td width="25%">                      
+                <td width="25%"> 
+                    <img class="img-responsive" src="<?php echo Yii::getAlias('@web') . "/images/portafolio.png"; ?>" alt="cp_dollar" /> 
                 </td>
                 <td width="60%">
                     <h3 class="text-light-blue text-bold"> <?php echo $model->nombre; ?> </h3>             
@@ -54,7 +52,7 @@ use yii\widgets\Pjax;
                     <span class="text-light-blue text-bold">  Categoria: </span> <?php echo $model->categoriaservicio->descripcion; ?> <br /> 
                     <span class="text-light-blue text-bold">  Importes:  </span> <?php echo $model->importe . "  -  (H.Profesores: ".$model->importe_hijoprofesor.")";?> <br />
                     <span class="text-light-blue text-bold">  Periodo: </span> <?php echo $model->detallePeriodo; ?> <br />
-                    <span class="text-light-blue text-bold">  Vencimiento Pago: </span> <?php echo Yii::$app->formatter->asDate($model->fecha_vencimiento); ?> <br />
+                    <span class="text-light-blue text-bold">  Vencimiento Pago: </span> <?php echo $model->xfecha_vencimiento; ?> <br />
                     <?php
                     if($model->activo)
 

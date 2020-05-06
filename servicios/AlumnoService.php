@@ -222,7 +222,7 @@ class AlumnoService extends \yii\base\Component
             
             $bonificacionesAlumno = \app\models\BonificacionAlumno::find()
                     ->andWhere(["id_alumno"=> $idAlumno])
-                   ->andWhere(['id_bonificacion'=>$dataModelBonificacion->id_bonificacion])->all();
+                   ->andWhere(['id_bonificacion'=>$dataModelBonificacion->id])->all();
                     
             if(!empty( $bonificacionesAlumno )){
                 throw new GralException('No se puede asignar dos mismas bonificaciones.');

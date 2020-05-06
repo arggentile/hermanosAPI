@@ -59,6 +59,12 @@ class DebitoAutomatico extends BaseDebitoAutomatico
         );
     } 
     
+    public function rulesPeriodoValido(){
+        if(Fecha::esFechaMayor($this->fin_periodo, $this->inicio_periodo)){
+            $this->addError('xinicio_periodo', 'Compruebe las fechas del Periodo.');
+        }       
+    }
+    
     /**************************************************************/
     /**************************************************************/
     
@@ -122,14 +128,15 @@ class DebitoAutomatico extends BaseDebitoAutomatico
             $this->fin_periodo = $value;
         }
     }
-    
-    /***********************************************************/
-    public function rulesPeriodoValido(){
-       if(Fecha::esFechaMayor($this->fin_periodo, $this->inicio_periodo)){
-        $this->addError('xinicio_periodo', 'Compruebe las fechas del Periodo.');
-       }
-       
+
+    public function getSePuedeEliminar(){ 
+        if($this->procesado==1 || $this->procesado=='1')
+            return false;
+        else
+            return true;
     }
+    /***********************************************************/
+   
     
     /**************************************************************/
     

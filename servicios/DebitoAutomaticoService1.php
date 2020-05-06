@@ -26,6 +26,47 @@ use app\helpers\GralException;
 class DebitoAutomaticoService {
 
     
+    public static function eliminarAlumno($id){        
+        try{
+            $transaction = Yii::$app->db->beginTransaction(); 
+            $model = Alumno::findOne($id);
+            if(empty($model))
+                throw new GralException('No se encontró el Alumno a eliminar');
+            
+            $bonificacionesAlumno = \app\models\BonificacionAlumno::find()->andWhere(['id_alumno'=>$id])->all();
+            if(!empty($bonificacionesAlumno)){
+                throw new GralException('No se puede realizar la eliminación, el alumno posee bonificaciones asignadas.');
+            }
+            
+            $serviciosAlumno = \app\models\ServicioAlumno::find()->andWhere(['id_alumno'=>$id])->all();
+            if(!empty($serviciosAlumno)){
+                throw new GralException('No se puede realizar la eliminación, el alumno posee servicios asignados(devengados).');    
+            }
+            
+            if($model->delete()){
+                $transaction->commit();
+                $response['success'] = true;
+                $response['mensaje'] = 'Eliminación correcta';
+                return $response;
+            }else{
+                $transaction->rollBack();
+                $response['success'] = false;
+                $response['mensaje'] = 'Eliminación erronea';
+                $response['error_models'] =   $model->errors; 
+                return $response;
+            }
+        }catch (GralException $e) {
+            (isset($transaction) && $transaction->isActive)?$transaction->rollBack():'';
+            \Yii::$app->getModule('audit')->data('errorAction', json_encode($e));  
+            throw new GralException($e->getMessage());            
+        }catch (\Exception $e) {      
+            (isset($transaction) && $transaction->isActive)?$transaction->rollBack():'';
+            \Yii::$app->getModule('audit')->data('errorAction', \yii\helpers\VarDumper::dumpAsString($e));
+            throw new yii\web\HttpException(500, $e->getMessage());
+        }              
+    }
+    
+    
     public function armarDebitoAutomatico($idDA) {
         try{
             $modelDebAut = DebitoAutomatico::findOne($idDA);

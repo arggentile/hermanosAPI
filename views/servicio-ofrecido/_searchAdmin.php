@@ -47,8 +47,8 @@ use yii\helpers\Url;
     <div class="row ">
         <div class="col-sm-12 form-group">
             <p class="pull-right">
-                <?= Html::submitButton('<i class="glyphicon glyphicon-search"></i> Buscar', ['class' => 'btn btn-primary']) ?>
-                <?= Html::button('<i class="glyphicon glyphicon-download-alt"></i> Exportar', ['class' => 'btn btn-export-listado']) ?>
+                <?= Html::submitButton('<i class="glyphicon glyphicon-search"></i> Buscar', ['class' => 'btn btn-search']) ?>
+                <?= Html::button('<i class="glyphicon glyphicon-download-alt"></i> Exportar', ['class' => 'btn btn-export btn-export-listado']) ?>
             </p>
         </div>      
     </div>

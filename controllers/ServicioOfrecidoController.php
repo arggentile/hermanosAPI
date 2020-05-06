@@ -45,7 +45,7 @@ class ServicioOfrecidoController extends Controller
                         'roles' => ['gestionarServicios'],
                     ],
                     [      
-                        'actions' => ['down-padron-excel'],   
+                        'actions' => [],   
                         'allow' => true,
                         //'roles' => [''],
                     ],
@@ -71,7 +71,7 @@ class ServicioOfrecidoController extends Controller
             'verbs' => [
                 'class' => VerbFilter::className(),
                 'actions' => [
-                    'delete' => ['POST'],
+                    'delete' => ['POST','GET'],
                 ],
             ],
         ];
@@ -113,16 +113,16 @@ class ServicioOfrecidoController extends Controller
     public function actionAdmin()
     {
         try{
-            $searchModel = new ServicioOfrecidoSearch();
-            $dataProvider = $searchModel->search(Yii::$app->request->queryParams);
-            
             $export = Yii::$app->request->get('export');
             if(isset($export) && $export==1)
                 return $this->exportarListado();
             
+            $searchModel = new ServicioOfrecidoSearch();
+            $dataProvider = $searchModel->search(Yii::$app->request->queryParams);
+            
             $data = [];     
             $data['filtros']['tiposervicios'] = \yii\helpers\ArrayHelper::map(\app\models\CategoriaServicioOfrecido::find()->asArray()->all(), 'id', 'descripcion');
-            $data['filtros']['sino'] = ['0'=>'NO', '1'=>'SI'];
+            $data['filtros']['sino'] = ['0'=>'No', '1'=>'Si'];
         }catch (\Exception $e) {
            \Yii::$app->getModule('audit')->data('errorAction', \yii\helpers\VarDumper::dumpAsString($e));
            \Yii::$app->session->setFlash('error', Yii::$app->params['errorExcepcion']);

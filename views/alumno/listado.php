@@ -82,14 +82,14 @@ $this->params['breadcrumbs'][] = $this->title;
                     'label' => 'Establecimiento',
                     'attribute'=>'establecimiento',    
                     'value' => function($model) {
-                        return $model->divisionescolar->establecimiento->nombre;
+                        return ($model->divisionescolar->establecimiento->iniciales)?$model->divisionescolar->establecimiento->iniciales:$model->divisionescolar->establecimiento->nombre;
                     },
                 ],              
                 [
                     'label' => 'Division',
                     'attribute'=>'id_divisionescolar',    
                     'value' => function($model) {
-                        return $model->divisionescolar->nombre;
+                        return (!empty($model->divisionescolar->iniciales))?$model->divisionescolar->iniciales:$model->divisionescolar->nombre;
                     },
                 ],
                 [
@@ -165,7 +165,8 @@ $this->params['breadcrumbs'][] = $this->title;
 
 <?php
 $this->registerJs("
-    $('#form-search-alumnos').on('beforeSubmit', function (e) {     
+    $('#form-search-alumnos').on('beforeSubmit', function (e) {   
+        $('#form-search-alumnos .btn-search').button('loading');
         e.preventDefault();
         
         dataOptionPjax = 
@@ -177,6 +178,7 @@ $this->registerJs("
         };
             
         $.pjax.reload(dataOptionPjax);  
+        
         return false;
     });
     
@@ -189,12 +191,6 @@ $this->registerJs("
             var curr_page = curr_page +  '?export=1';
         window.open(curr_page,'_blank');       
     });
-    
-
-    
-    
-   
-    
 ", \yii\web\View::POS_READY);
 ?>
 

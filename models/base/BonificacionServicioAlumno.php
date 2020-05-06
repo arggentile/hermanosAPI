@@ -13,7 +13,7 @@ use Yii;
  * @property integer $id_bonificacion
  * @property integer $id_servicioalumno
  *
- * @property \app\models\CategoriaBonificacion $bonificacion
+ * @property \app\models\Bonificaciones $bonificacion
  * @property \app\models\ServicioAlumno $servicioalumno
  * @property string $aliasModel
  */
@@ -38,7 +38,7 @@ abstract class BonificacionServicioAlumno extends \yii\db\ActiveRecord
         return [
             [['id_bonificacion', 'id_servicioalumno'], 'required'],
             [['id_bonificacion', 'id_servicioalumno'], 'integer'],
-            [['id_bonificacion'], 'exist', 'skipOnError' => true, 'targetClass' => \app\models\CategoriaBonificacion::className(), 'targetAttribute' => ['id_bonificacion' => 'id']],
+            [['id_bonificacion'], 'exist', 'skipOnError' => true, 'targetClass' => \app\models\Bonificaciones::className(), 'targetAttribute' => ['id_bonificacion' => 'id']],
             [['id_servicioalumno'], 'exist', 'skipOnError' => true, 'targetClass' => \app\models\ServicioAlumno::className(), 'targetAttribute' => ['id_servicioalumno' => 'id']]
         ];
     }
@@ -60,7 +60,7 @@ abstract class BonificacionServicioAlumno extends \yii\db\ActiveRecord
      */
     public function getBonificacion()
     {
-        return $this->hasOne(\app\models\CategoriaBonificacion::className(), ['id' => 'id_bonificacion']);
+        return $this->hasOne(\app\models\Bonificaciones::className(), ['id' => 'id_bonificacion']);
     }
 
     /**

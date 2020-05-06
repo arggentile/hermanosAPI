@@ -6,6 +6,36 @@
 
 /* listao y export */
 $(document).ready(function () {
+    $('body').on('click', ".btn-eliminar-servicioofrecido", function (e) {
+        e.preventDefault();
+        var href = $(this).attr('data-url');
+       
+        bootbox.confirm({
+            message: "Está seguro que desea realizar la Eliminacion?",
+            buttons: {
+                confirm: {
+                    label: '<i class="glyphicon glyphicon-ok"></i> Si',
+                    className: 'btn-success'
+                },
+                cancel: {
+                    label: '<i class="glyphicon glyphicon-remove"></i> No',
+                    className: 'btn-danger'
+                }
+            },
+            callback: function (result) {
+                if(result===true){     
+                    
+                    $("body").loading({message: 'Aguarde procesando...'});
+                    window.location.href = href;
+                  
+                }
+            }
+        });
+        
+    });     
+    
+    
+    
     $('#form-search-serviciosofrecidos').on('beforeSubmit', function (e) {     
         e.preventDefault();
         var urlReload = $('#url-reload-listado-serviciosofrecidos').val();       

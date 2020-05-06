@@ -18,7 +18,7 @@ $this->params['breadcrumbs'][] = $this->title;
 ?>
 <div class="box box-default box-colegio" id="establecimiento-view">
     <div class="box-header with-border">
-           <i class="fa fa-university"></i> <h3 class="box-title"> <?= $model-> nombre; ?></h3> 
+           <i class="fa fa-university"></i> <h3 class="box-title"> Establecimiento: <?= $model-> nombre; ?></h3> 
     </div>
     <div class="box-body">   
         
@@ -61,13 +61,17 @@ $this->params['breadcrumbs'][] = $this->title;
                     echo Html::a('<i class="fa fa-users"></i>   Alumnos', 'javascript:void(0)', ['id' => $model->id, 'class' => '',
                        'onclick'=>'js:establecimiento.misAlumnos("'.Url::to(['/establecimiento/mis-alumnos','establecimiento'=>$model->id]) .'");']) ?>
                 </li>
-                <li>
+                
+                <!-- <li> -->
                 <?php
+                /*
                 if(Yii::$app->user->can('gestionarServiciosEstablecimiento'))
                     echo Html::a('<i class="fa fa-pencil"></i>   Servicios', 'javascript:void(0)',['id' => $model->id, 'class' => '',
                        'onclick'=>'js:establecimiento.misServicios("'.Url::to(['/establecimiento/mis-servicios-ofrecidos','establecimiento'=>$model->id]) .'");']);
-                ?>
-                </li>
+                */
+                  ?>
+                 
+                <!-- </li> -->
         
             </ul>
         </div>

@@ -53,8 +53,13 @@ class ServicioAlumno extends BaseServicioAlumno
     public function getDatosMiAlumno(){
         return $this->miAlumno->miPersona->nro_documento . " - " .$this->miAlumno->miPersona->apellido ." ".$this->miAlumno->miPersona->nombre;
     }    
-    
-    
+    /*
+    public function getMiFactura() {
+        $modelServiciosFactura = ServiciosTiket::find()->andWhere(['id_servicio'=>$this->id])->andWhere(['tiposervicio'=>])->one();
+        
+        return $this->miAlumno->miPersona->nro_documento . " - " .$this->miAlumno->miPersona->apellido ." ".$this->miAlumno->miPersona->nombre;
+    }   
+    */
     
     public function getDatosMiServicio(){
         return "(". $this->servicio->categoriaservicio->descripcion. ") ". $this->servicio->nombre;
@@ -69,6 +74,19 @@ class ServicioAlumno extends BaseServicioAlumno
     public function getImporteRestante(){
         $importe=$this->importe_servicio - $this->importe_descuento - $this->importe_abonado;
         return $importe;
+    }
+    
+    public function getMiFactura(){
+        $modelServicioTiket = ServiciosTiket::find()->andWhere(['tiposervicio'=> ServiciosTiket::ID_SERVICIOS])->andWhere(['id_servicio'=>$this->id])->one();
+        if(!empty($modelServicioTiket)){
+            $modelTiket = Factura::find()->andWhere(['id_tiket'=>$modelServicioTiket->id_tiket])->one();
+            if(!$modelTiket)
+                return false;
+            else {
+                return $modelTiket;
+            }
+        }else
+            return false;
     }
     
     public function getDetalleEstado(){
@@ -86,6 +104,8 @@ class ServicioAlumno extends BaseServicioAlumno
                     $estado='<span class="text text-sa-abonado">Abonada Deb.Automático</span>'; break;
             case EstadoServicio::ID_ABONADA_EN_CONVENIOPAGO:
                 $estado='<span class="text text-sa-abonado">Abonada Convenio Pago</span>'; break;
+            case EstadoServicio::ID_DESCONTADA:
+                $estado='<span class="text text-sa-abonado">SIN/PAGOS </span>'; break;
         }
         return $estado;
         
@@ -106,6 +126,8 @@ class ServicioAlumno extends BaseServicioAlumno
                 $estado='Abonada por Debito Automatico'; break;
             case EstadoServicio::ID_ABONADA_EN_CONVENIOPAGO:
                 $estado='Abonada en Convenio de Pago'; break;
+            case EstadoServicio::ID_DESCONTADA:
+                $estado='<span class="text text-sa-abonado">SIN/PAGOS </span>'; break;
         }
         return $estado;
         

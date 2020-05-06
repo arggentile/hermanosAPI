@@ -18,9 +18,12 @@ use Yii;
  * @property string $detalles
  * @property integer $id_cliente
  * @property integer $id_cuentapagadora
+ * @property boolean $con_servicios
+ * @property integer $id_factura
  *
  * @property \app\models\ServiciosTiket[] $serviciosTikets
  * @property \app\models\Cuentas $cuentapagadora
+ * @property \app\models\Factura $factura
  * @property \app\models\FormaPago $tipopago
  * @property string $aliasModel
  */
@@ -45,11 +48,13 @@ abstract class Tiket extends \yii\db\ActiveRecord
         return [
             [['fecha_tiket', 'id_tipopago', 'importe', 'fecha_pago', 'id_cuentapagadora'], 'required'],
             [['fecha_tiket', 'fecha_pago'], 'safe'],
-            [['id_tipopago', 'id_cliente', 'id_cuentapagadora'], 'integer'],
+            [['id_tipopago', 'id_cliente', 'id_cuentapagadora', 'id_factura'], 'integer'],
             [['importe'], 'number'],
+            [['con_servicios'], 'boolean'],
             [['nro_tiket'], 'string', 'max' => 50],
             [['detalles'], 'string', 'max' => 255],
             [['id_cuentapagadora'], 'exist', 'skipOnError' => true, 'targetClass' => \app\models\Cuentas::className(), 'targetAttribute' => ['id_cuentapagadora' => 'id']],
+            [['id_factura'], 'exist', 'skipOnError' => true, 'targetClass' => \app\models\Factura::className(), 'targetAttribute' => ['id_factura' => 'id']],
             [['id_tipopago'], 'exist', 'skipOnError' => true, 'targetClass' => \app\models\FormaPago::className(), 'targetAttribute' => ['id_tipopago' => 'id']]
         ];
     }
@@ -69,6 +74,8 @@ abstract class Tiket extends \yii\db\ActiveRecord
             'detalles' => 'Detalles',
             'id_cliente' => 'Id Cliente',
             'id_cuentapagadora' => 'Id Cuentapagadora',
+            'con_servicios' => 'Con Servicios',
+            'id_factura' => 'Id Factura',
         ];
     }
 
@@ -86,6 +93,14 @@ abstract class Tiket extends \yii\db\ActiveRecord
     public function getCuentapagadora()
     {
         return $this->hasOne(\app\models\Cuentas::className(), ['id' => 'id_cuentapagadora']);
+    }
+
+    /**
+     * @return \yii\db\ActiveQuery
+     */
+    public function getFactura()
+    {
+        return $this->hasOne(\app\models\Factura::className(), ['id' => 'id_factura']);
     }
 
     /**

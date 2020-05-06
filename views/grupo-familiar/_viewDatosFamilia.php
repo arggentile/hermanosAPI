@@ -53,7 +53,8 @@ GrupoFamiliarAsset::register($this);
                     <span class="text-light-blue bold">  Folio: </span> <?php echo $model->folio; ?> <br />
                     <span class="text-light-blue bold">  Descripción: </span> <?php echo $model->descripcion; ?> <br />
                     <span class="text-light-blue bold">  Pago Asociado: </span> <?php echo $model->pagoAsociado->nombre; ?> <br />
-                 </td>
+                    <span class="text-light-blue bold">  Cuil Emision Facturas: </span> <?php echo $model->cuil_afip_pago; ?> <br />
+                </td>
             </tr>
         </table>  
     </div>

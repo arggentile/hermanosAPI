@@ -34,6 +34,7 @@ class AppAsset extends AssetBundle
         'yii\web\YiiAsset',
         'yii\bootstrap\BootstrapAsset',        
         'app\assets\BootBoxAsset',
-        'app\assets\PnotifyAsset'
+        'app\assets\PnotifyAsset',
+      
     ];
 }

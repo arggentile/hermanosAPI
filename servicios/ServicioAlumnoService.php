@@ -73,6 +73,7 @@ class ServicioAlumnoService extends \yii\base\Component
     }
     
     
+    
     public function editarServicioAlumno($idServicio, $dataModelServicio){
         $transaction = Yii::$app->db->beginTransaction(); 
         try{         
@@ -147,18 +148,20 @@ class ServicioAlumnoService extends \yii\base\Component
     
     
     /*
-     * Retorna un query conteniendo los servicios impagos de una dterminado grupo familiar.
+     * Retorna un query conteniendo los servicios impagos de una determinado grupo familiar.
      * El query presenta tanto los servicios impagos; como las cuotas impagas
      * de los convenios de pago
      */
-    public static function devolverDeudaFamilia($idFamilia= null, $tipoServicio=null, $idServicioAlumno = null){
+    public static function devolverDeudaFamilia($idFamilia= null, $tipoServicio=null, $idsServiciosAlumno = null, $idsCuotas = null){
         
-        $sqlServicios = "SELECT a.nrofamilia as nrofamilia, a.nrotarjeta, sa.id as idservicio, 
-                            sa.importe_servicio as importeservicio,
-                            sa.importe_descuento as importedescuento,
-                            sa.importe_abonado as importeabonado,
-                            (sa.importe_servicio - sa.importe_descuento - sa.importe_abonado) as importeaabonar,
-                            ". \app\models\DebitoAutomatico::ID_SERVICIO_CUOTAS . " as tiposervicio
+        $sqlServicios = "SELECT 
+                        a.nrofamilia as idfamilia, 
+                        sa.id as idservicio, 
+                        sa.importe_servicio as importeservicio,
+                        sa.importe_descuento as importedescuento,
+                        sa.importe_abonado as importeabonado,
+                        (sa.importe_servicio - sa.importe_descuento - sa.importe_abonado) as importeaabonar,
+                        ". \app\models\DebitoAutomatico::ID_TIPOSERVICIO_SERVICIOS  . " as tiposervicio
                         FROM servicio_alumno sa 
                         INNER JOIN ( 
                             SELECT a.id as idalumno, f.id as nrofamilia, f.nro_tarjetacredito as nrotarjeta 
@@ -167,31 +170,31 @@ class ServicioAlumnoService extends \yii\base\Component
                         INNER JOIN servicio_ofrecido so ON (so.id = sa.id_servicio)                     
                         INNER JOIN categoria_servicio_ofrecido cts ON (cts.id = so.id_categoriaservicio)";
         
-        $whereServicio =  "WHERE (sa.id_estado = ". \app\models\EstadoServicio::ID_ABIERTA  .")";
+        $whereServicio =  " WHERE (sa.id_estado = ". \app\models\EstadoServicio::ID_ABIERTA  .")";
         if($idFamilia){
             $whereServicio .= " and (a.nrofamilia = ". $idFamilia .")";
         }
+       if(!is_null($idsServiciosAlumno))
+            $whereServicio .= " and (sa.id in (". $idsServiciosAlumno ."))";
         $sqlCuotas = "
-                    SELECT a.nrofamilia as nrofamilia, a.nrotarjeta, ccp.id as idservicio, 
-                            0 as importeservicio,
-                            0 as importedescuento,
-                            0 as importeabonado,
-                            (sa.importe_servicio - sa.importe_descuento - sa.importe_abonado) as importeaabonar, 
-                            ". \app\models\DebitoAutomatico::ID_SERVICIO_CONVENIO_PAGO . " as tiposervicio
-                        FROM servicio_alumno sa 
-                        INNER JOIN ( 
-                            SELECT a.id as idalumno, f.id as nrofamilia, f.nro_tarjetacredito as nrotarjeta 
-                             FROM alumno a INNER JOIN grupo_familiar f ON (f.id = a.id_grupofamiliar)                              
-                        ) a ON (a.idalumno = sa.id_alumno) 
-                        INNER JOIN convenio_pago cp ON cp.id_familia = a.nrofamilia
-                        INNER JOIN cuota_convenio_pago ccp ON (ccp.	id_conveniopago  = cp.id)";
-        
-        $whereCuotas = "WHERE (ccp.id_estado = ". \app\models\EstadoServicio::ID_ABIERTA  .")";
+                    SELECT 
+                        cp.id_familia as idfamilia, 
+                        ccp.id as idservicio, 
+                        ccp.monto as importeservicio,
+                        0 as importedescuento,
+                        0 as importeabonado,
+                        (ccp.monto) as importeaabonar, 
+                        ". \app\models\DebitoAutomatico::ID_TIPOSERVICIO_CONVENIO_PAGO . " as tiposervicio
+                        FROM  cuota_convenio_pago ccp
+                        INNER JOIN convenio_pago cp ON cp.id = ccp.id_conveniopago";
+                        
+        $whereCuotas = " WHERE (ccp.id_estado = ". \app\models\EstadoServicio::ID_ABIERTA  .")";
         
         if($idFamilia){
-            $whereCuotas .= " and (a.nrofamilia = ". $idFamilia .")";
+            $whereCuotas .= " and (cp.id_familia = ". $idFamilia .")";
         }
-        
+        if(!is_null($idsCuotas))
+            $whereCuotas .= " and (cp.id in (". $idsCuotas ."))";
         $sqlDeuda = "SELECT * FROM (
                    ( " . $sqlServicios . $whereServicio .
                 ")
@@ -212,7 +215,7 @@ class ServicioAlumnoService extends \yii\base\Component
                     'pageSize' => 1500,
                 ],
                 'sort' => [
-                    'attributes' => ['idservicio', 'nrofamilia', 'importeservicio','importedescuento','importeabonado','importeaabonar','tiposervicio'],
+                    'attributes' => ['idservicio', 'idfamilia', 'importeservicio','importedescuento','importeabonado','importeaabonar','tiposervicio'],
                 ],                    
             ]);
             return $serviciosImpagos;

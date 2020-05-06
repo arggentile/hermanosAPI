@@ -46,7 +46,7 @@ use yii\helpers\Url;
                             'label' => 'TIPO SERVICIO',  
                             'attribute'=>'tiposervicio',
                             'value' => function($model) {
-                                if($model['tiposervicio'] == app\models\DebitoAutomatico::ID_SERVICIO_CONVENIO_PAGO)
+                                if($model['tiposervicio'] == app\models\DebitoAutomatico::ID_TIPOSERVICIO_CONVENIO_PAGO)
                                     return "Cuota CP";
                                 else
                                     return "Servicios";
@@ -55,10 +55,10 @@ use yii\helpers\Url;
                         [
                             'label' => 'Servicio',                       
                             'value' => function($model) {
-                                if($model['tiposervicio']== app\models\DebitoAutomatico::ID_SERVICIO_CONVENIO_PAGO){
+                                if($model['tiposervicio']== app\models\DebitoAutomatico::ID_TIPOSERVICIO_CONVENIO_PAGO){
                                     return \app\models\CuotaConvenioPago::getDetalleDatosCuota($model['idservicio']);
                                 }    
-                                if($model['tiposervicio']== app\models\DebitoAutomatico::ID_SERVICIO_CUOTAS){
+                                if($model['tiposervicio']== app\models\DebitoAutomatico::ID_TIPOSERVICIO_SERVICIOS){
                                     return \app\models\ServicioAlumno::getDetalleDatos($model['idservicio']);
                                 }
 

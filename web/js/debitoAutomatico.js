@@ -4,6 +4,8 @@
  * and open the template in the editor.
  */
 
+
+
 function downArchivoBanco(xhref){       
     $('body').loading({message: 'ESPERE... procesando'});
     $.ajax({
@@ -49,6 +51,33 @@ function downArchivoBanco(xhref){
     }); 
 } 
 
+$('body').on('click', '.btn-eliminar-debito', function(e){
+ 
+        e.preventDefault();
+        var href = $(this).attr('data-url');
+       
+        bootbox.confirm({
+            message: "Está seguro que desea realizar la eliminación?",
+            buttons: {
+                confirm: {
+                    label: '<i class="glyphicon glyphicon-ok"></i> Si',
+                    className: 'btn-success'
+                },
+                cancel: {
+                    label: '<i class="glyphicon glyphicon-remove"></i> No',
+                    className: 'btn-danger'
+                }
+            },
+            callback: function (result) {
+                if(result===true){     
+                    
+                    $("body").loading({message: 'Aguarde procesando...'});
+                    window.location.href = href;
+                  
+                }
+            }
+        });
+});
 
 $('#btn-verificar').on('click',function(){
     $('body').loading({message: 'ESPERE... procesando', theme:'dark'});
@@ -74,7 +103,7 @@ $('#btn-verificar').on('click',function(){
 
 /*procesar debolucion*/
 $('#btn-procesa').on('click',function(){               
-    $('#modalProcesa').modal('show').find('#modalContent').load(jQuery(this).attr('value'));
+    $('#modalProcesa').modal('show');
 }); 
 
 

@@ -108,7 +108,6 @@ class GrupoFamiliarController extends Controller
             $dataProvider = $searchModel->search(Yii::$app->request->queryParams);
         }catch (\Exception $e) {            
             \Yii::$app->getModule('audit')->data('errorAction', \yii\helpers\VarDumper::dumpAsString($e)); 
-            //Yii::$app->session->setFlash('error', Yii::$app->params['errorExcepcion']);
         }   
         
         return $this->render('listado', [
@@ -287,6 +286,7 @@ class GrupoFamiliarController extends Controller
             $familia =  Yii::$app->request->get('familia');
             $idresponsable = Yii::$app->request->get('idresponsable');
             $tiporesponsable = Yii::$app->request->get('tipores');
+            $responsable = Yii::$app->request->get('responsable');
             
             $modelFamilia = GrupoFamiliar::findOne($familia);        
             if(!$modelFamilia)        
@@ -314,7 +314,7 @@ class GrupoFamiliarController extends Controller
                     !empty($idresponsable) ){
                 
                 $transaction = Yii::$app->db->beginTransaction(); 
-                $response = Yii::$app->serviceGrupoFamiliar->asignarResponsableFamilia($idresponsable, $familia, $tiporesponsable);
+                $response = Yii::$app->serviceGrupoFamiliar->asignarResponsableFamilia($idresponsable, $familia, $tiporesponsable, $responsable);
                 if ($response['success']){
                     $transaction->commit();
                     Yii::$app->response->format = 'json';
@@ -536,7 +536,7 @@ class GrupoFamiliarController extends Controller
                 $objPHPExcel->getActiveSheet()->getColumnDimension('E')->setAutoSize(true);
                 $objPHPExcel->getActiveSheet()->getColumnDimension('F')->setAutoSize(true);
                 $objPHPExcel->getActiveSheet()->getColumnDimension('G')->setAutoSize(true);
-                
+                $objPHPExcel->getActiveSheet()->getColumnDimension('H')->setAutoSize(true);
                 $objPHPExcel->getActiveSheet()->getStyle('A')->getAlignment()->setWrapText(true);
                 $objPHPExcel->getActiveSheet()->getStyle('B')->getAlignment()->setWrapText(true);
                 $objPHPExcel->getActiveSheet()->getStyle('C')->getAlignment()->setWrapText(true);
@@ -544,6 +544,7 @@ class GrupoFamiliarController extends Controller
                 $objPHPExcel->getActiveSheet()->getStyle('E')->getAlignment()->setWrapText(true);
                 $objPHPExcel->getActiveSheet()->getStyle('F')->getAlignment()->setWrapText(true);
                 $objPHPExcel->getActiveSheet()->getStyle('G')->getAlignment()->setWrapText(true);
+                $objPHPExcel->getActiveSheet()->getStyle('H')->getAlignment()->setWrapText(true);
 
             
                 $this->cellColor($objPHPExcel, 'A1', 'F28A8C');
@@ -553,7 +554,7 @@ class GrupoFamiliarController extends Controller
                 $this->cellColor($objPHPExcel, 'E1', 'F28A8C');
                 $this->cellColor($objPHPExcel, 'F1', 'F28A8C');
                 $this->cellColor($objPHPExcel, 'G1', 'F28A8C');
-                
+                $this->cellColor($objPHPExcel, 'H1', 'F28A8C');
                 $objPHPExcel->getActiveSheet()->setCellValue('A1', 'APELLIDOS');
                 $objPHPExcel->getActiveSheet()->setCellValue('C1', 'DESCRIPCION');                
                 $objPHPExcel->getActiveSheet()->setCellValue('D1', 'Nº Hijos');
@@ -561,7 +562,7 @@ class GrupoFamiliarController extends Controller
                 $objPHPExcel->getActiveSheet()->setCellValue('F1', 'PAGO ASOCIADO');
                 $objPHPExcel->getActiveSheet()->setCellValue('G1', 'TC/CBU');
              
-
+                $objPHPExcel->getActiveSheet()->setCellValue('H1', 'CUIL Fact.AFIP');
                 $letracolumnainicio = 'A';
                 $letrafilainicio = 3;
 
@@ -574,7 +575,7 @@ class GrupoFamiliarController extends Controller
                     $columnaE = 'E' . $letrafilainicio1;
                     $columnaF = 'F' . $letrafilainicio1;
                     $columnaG = 'G' . $letrafilainicio1;
-
+                    $columnaH = 'H' . $letrafilainicio1;
                     $objPHPExcel->getActiveSheet()->setCellValue($columnaA, $data[$i]["apellidos"]);
                     $objPHPExcel->getActiveSheet()->setCellValue($columnaB, $data[$i]["folio"]);
                     $objPHPExcel->getActiveSheet()->setCellValue($columnaC, $data[$i]["descripcion"]);
@@ -601,7 +602,8 @@ class GrupoFamiliarController extends Controller
                     elseif($data[$i]["id_pago_asociado"]=='5')
                         $objPHPExcel->getActiveSheet()->setCellValue($columnaG, $data[$i]["nro_tarjetacredito"]);
                     
-                              
+                    $objPHPExcel->getActiveSheet()->setCellValue($columnaH, $data[$i]["cuil_afip_pago"] );
+                             
                     $i = $i + 1;
                     $letrafilainicio += 1;
                 }  
@@ -612,11 +614,9 @@ class GrupoFamiliarController extends Controller
             
                 $writer = new \PhpOffice\PhpSpreadsheet\Writer\Xlsx($objPHPExcel);
                 $writer->save($ruta_archivo);
-                
                 $url_pdf = \yii\helpers\Url::to(['down-padron-excel', 'archivo' => $nombre_archivo]);
-                return $this->redirect($url_pdf); 
+                return $this->redirect($url_pdf);
                 
-          
             }else{                
                 Yii::$app->session->setFlash('error', 'Listado Vacio.');
             }

@@ -43,6 +43,11 @@ class FormaPago extends BaseFormaPago
     public static function getFormasPago(){
         $dropciones = FormaPago::find()->asArray()->all();
         return ArrayHelper::map($dropciones, 'id', 'nombre');
-    }     
+    }    
     
+    public static function getFormasPagoHabilitadosCobrosCaja(){
+        $idsHablitados = [FormaPago::ID_ESFECTIVO,FormaPago::ID_POSNET_TC, FormaPago::ID_POSTNET_TD];
+        $dropciones = FormaPago::find()->andWhere(['in','id',$idsHablitados])->asArray()->all();
+        return ArrayHelper::map($dropciones, 'id', 'nombre');
+    }   
 }

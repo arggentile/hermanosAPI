@@ -18,7 +18,7 @@ $this->params['breadcrumbs'][] = $this->title;
                 
                 <?php
                 if(Yii::$app->user->can('altaDebitoAutomatico'))
-                    echo Html::a('<i class=\'fa fa-plus-square\'></i> Nuevo', ['/debito-automatico/alta'], ['class' => 'btn btn-success btn-xs','id'=>'btn-alta']) ?>
+                    echo Html::a('<i class=\'fa fa-plus-square\'></i> Nuevo', ['/debito-automatico/alta'], ['class' => 'btn btn-primary btn-xs','id'=>'btn-alta']) ?>
             </div>
     </div>
     <div class="box-body">        

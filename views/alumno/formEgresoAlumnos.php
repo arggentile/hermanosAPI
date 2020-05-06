@@ -145,7 +145,7 @@ $this->params['breadcrumbs'][] = $this->title;
                                                     'format' => 'dd-mm-yyyy',
                                                     'required'=>'required',
                                                 ]
-                                            ]))->label('Fecha Egreso');
+                                            ]))->label('Fecha');
                             ?>
                     <?php                            Html::error($modelAlumnoEgreso, 'fecha_egereso'); ?>
                 </div>

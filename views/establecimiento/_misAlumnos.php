@@ -76,7 +76,7 @@ use yii\helpers\Url;
                                 'attribute' => 'id_divisionescolar',
                                 'filter' => dmstr\helpers\Html::activeDropDownList($searchModelAlumnos, 'id_divisionescolar', \app\models\DivisionEscolar::getDivisionesEstablecimiento($modelEstablecimiento->id), ['prompt' => '', 'class' => 'form-control']),
                                 'value' => function($model) {
-                                    return $model->divisionescolar->nombre;
+                                    return (!empty($model->divisionescolar->iniciales))?$model->divisionescolar->iniciales:$model->divisionescolar->nombre;
                             },
                             ],
                             ['class' => 'yii\grid\ActionColumn',

@@ -27,9 +27,15 @@ class CategoriaBonificacion extends BaseCategoriaBonificacion
         return ArrayHelper::merge(
             parent::rules(),
             [
-                # custom validation rules
+                ['valor','rulesValorValido']
             ]
         );
+    }
+    
+    public function rulesValorValido() {
+        if($this->valor > 100)
+         $this->addError('valor', 'El valor de la Bonificacion debe ser menor o igualal 100 %.');
+            
     }
     
     public function attributeLabels()

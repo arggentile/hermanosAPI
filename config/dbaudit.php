@@ -1,5 +1,6 @@
 <?php
 
+
 return [
     'class' => 'yii\db\Connection',
     'dsn' => 'mysql:host=hermanosmysql;dbname=hermanosaudit',

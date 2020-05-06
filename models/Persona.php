@@ -98,6 +98,9 @@ public function behaviors()
     
     public function rulesDocumentoValido() {
         if(!empty($this->nro_documento)){
+            if(!is_numeric($this->nro_documento))
+                $this->addError('nro_documento','Nro documento solo adminite digitos.');
+            
             if(strlen($this->nro_documento)!==11 && $this->id_tipodocumento=='4')
                 $this->addError('nro_documento','El CUIL debe poseer 11 digitos');
             

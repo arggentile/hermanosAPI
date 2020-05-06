@@ -42,24 +42,25 @@ EstablecimientoAssets::register($this);
                                     return ($model->divisionegreso)?$model->divisionegreso->nombre:'';
                                 }
                             ],                       
-                            ['class' => 'yii\grid\ActionColumn',
-                                'headerOptions' => ['width' => '30','class'=>''],
-                                'template'=>'{view}',    
-                                'visibleButtons' => [                                   
-                                    'view' => !Yii::$app->user->can('visualizarDivisionEscolar'),
-                                ],
-                                'buttons' => 
-                                   [
-                                   'view'  => function ($url, $model) {                                
-                                                    return Html::a( '<i class="glyphicon glyphicon-eye-open"></i>',
-                                                                           ['/division-escolar/view', 'id'=>$model['id']],
-                                                                           ['class'=>'']
-                                                                   );
-                                           },  
-                                   ],
-                                                   //'visible'=>Yii::$app->user->can('visualizarDivisionEscolar'),
-                            ],
-                            ['class' => 'yii\grid\ActionColumn',
+//                            ['class' => 'yii\grid\ActionColumn',
+//                                'headerOptions' => ['width' => '30','class'=>''],
+//                                'template'=>'{view}',    
+//                                'visibleButtons' => [                                   
+//                                    'view' => !Yii::$app->user->can('visualizarDivisionEscolar'),
+//                                ],
+//                                'buttons' => 
+//                                   [
+//                                   'view'  => function ($url, $model) {                                
+//                                                    return Html::a( '<i class="glyphicon glyphicon-eye-open"></i>',
+//                                                                           ['/division-escolar/view', 'id'=>$model['id']],
+//                                                                           ['class'=>'']
+//                                                                   );
+//                                           },  
+//                                   ],
+//                                                   //'visible'=>Yii::$app->user->can('visualizarDivisionEscolar'),
+//                            ],
+                            [
+                                'class' => 'yii\grid\ActionColumn',
                                 'headerOptions' => ['width' => '80','class'=>'gestiongrid'],
                                 'template'=>'{update} {delete}',
                                 'visibleButtons' => [                                   

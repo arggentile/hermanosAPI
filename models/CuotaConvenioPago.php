@@ -57,13 +57,15 @@ class CuotaConvenioPago extends BaseCuotaConvenioPago
     }
     
     public function rulesFechaCuotaValida() {
-        if(!empty($this->fecha_establecida)){
+        if(!empty($this->fecha_establecida && $this->isNewRecord)){
             if(Fecha::esFechaMayor($this->fecha_establecida, date('Y-m-d'))){
                 $this->addError('xfecha_establecida', 'La fecha debe ser mayor a la fecha Actual.');
                 $this->addError('fecha_establecida', 'La fecha debe ser mayor a la fecha Actual.');
             }
         }
     }    
+    
+    
     
     /**************************************************************/
     /**************************************************************/

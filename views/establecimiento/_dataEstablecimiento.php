@@ -6,7 +6,7 @@
                     <img class="img-responsive" src="<?php echo Yii::getAlias('@web') . "/images/escuela.png"; ?>" alt="cp_dollar" />  
                 </td>
                 <td width="60%">
-                    <h3 class="text-light-blue text-bold"> Establecimiento: <?php echo $model->nombre; ?> </h3>
+                    <h3 class="text-light-blue text-bold"> <?php echo $model->nombre; ?> </h3>
                     <span class="text-light-blue text-bold">  Fecha Apertura: </span> <?php echo \Yii::$app->formatter->asDate($model->fecha_apertura); ?><br /> 
                     <span class="text-light-blue text-bold">  Dirección: </span> <?php echo $model->calle; ?> <br />
                     <span class="text-light-blue text-bold">  Teléfono: </span> <?php echo $model->telefono; ?> <br />

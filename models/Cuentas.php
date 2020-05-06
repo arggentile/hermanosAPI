@@ -18,6 +18,9 @@ class Cuentas extends BaseCuentas
     const DETALLEtipo_moviento_egreso = 'EGRESO';
     const DETALLEtipo_moviento_ingreso = 'INGRESO';
     
+    const ID_CAJA_COLEGIO = 1;
+    const ID_CAJA_PATAGONIA = 2;
+    
     public function behaviors()
     {
         return ArrayHelper::merge(

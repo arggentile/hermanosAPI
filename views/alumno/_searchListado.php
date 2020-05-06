@@ -86,10 +86,12 @@ use yii\helpers\Url;
     <div class="row ">
         <div class="col-sm-12">
             <p class="pull-right">
-            <?= Html::submitButton('<i class="glyphicon glyphicon-search"></i> Buscar', ['class' => 'btn btn-search']) ?>
+            <?= Html::submitButton('<i class="glyphicon glyphicon-search"></i> Buscar', ['class' => 'btn btn-search','data-loading-text'=>"Aguarde..."]) ?>
             <?php
             if(Yii::$app->user->can('exportarAlumno'))
-                echo Html::button('<i class="glyphicon glyphicon-download-alt"></i> Exportar', ['class' => 'btn btn btn-export btn-export-listado']);
+                echo Html::button('<i class="glyphicon glyphicon-download-alt"></i> Exportar', 
+                        ['class' => 'btn btn btn-export btn-export-listado',
+                            ]);
             ?>
             </p>
         </div>

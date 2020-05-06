@@ -19,7 +19,7 @@ use kartik\widgets\DatePicker;
     ]); ?>
     
             <?= $form->field($model, 'nombre') ?>
-        
+            <?= $form->field($model, 'iniciales') ?>
             <?= $form->field($model, 'xfecha_apertura')->widget(
                     DatePicker::className(),([
                                         'language'=>'es',                                        
@@ -43,7 +43,7 @@ use kartik\widgets\DatePicker;
 
         <div class="form-group">
             <div class="col-sm-offset-2 col-sm-10">
-                <?= Html::submitButton("<i class='fa fa-save'></i> " . ' GUARDAR', ['class' => 'btn btn-primary btn-flat btn-block', 'id' => 'btn-envio']) ?>
+                <?= Html::submitButton("<i class='fa fa-save'></i> " . ' GUARDAR', ['class' => 'btn btn-save btn-flat btn-block', 'id' => 'btn-envio']) ?>
             </div>
         </div>
 

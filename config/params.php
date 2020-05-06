@@ -21,4 +21,6 @@ return [
     
     //establece si se coloca el descuento familiar automaticamente en el devengamiento
     'devenga.descuentosFamiliaresAutomatico' => true, 
+    'ptoVtaAfip' => 1,
+
 ];

@@ -17,7 +17,7 @@ $this->params['breadcrumbs'][] = $this->title;
         <i class="fa fa-cogs"></i> <h3 class="box-title"> Administración Servicios </h3> 
         <p class="pull-right"> 
                 <?=  Html::a('<i class="glyphicon glyphicon-plus"></i> Alta Servicio', 
-                        ['alta'], ['class' => 'btn btn-xs btn-success btn-alta']); ?> 
+                        ['alta'], ['class' => 'btn btn-xs btn-select btn-alta']); ?> 
             </p>
     </div>
     <div class="box-body"> 
@@ -66,13 +66,14 @@ $this->params['breadcrumbs'][] = $this->title;
                         'value' => function($model, $key, $index, $column) {
                                 return $model->getDetallePeriodo();
                             },                        
-                    ],                   
+                    ],    
                     [
-                        'label' => 'Vencimiento Pago',
+                        'label' => 'Vencimiento',
                         'value' => 'fecha_vencimiento',
-                        'format'=>'date'
-                    ],                
-                    
+                        'value' => function($model, $key, $index, $column) {
+                                return $model->xfecha_vencimiento;
+                            },                        
+                    ],  
                     [
                         'label' => 'Devenga',
                         'attribute'=>'devengamiento_automatico',
@@ -96,7 +97,15 @@ $this->params['breadcrumbs'][] = $this->title;
                         },
                     ],
 
-                    ['class' => 'yii\grid\ActionColumn'],
+                    [
+                    'class' => 'yii\grid\ActionColumn',
+                    'headerOptions' => ['width' => '50', 'class'=>'actionsgrid'],
+                    'template'=>'{update} {view}',
+                    'visibleButtons' => [                                   
+                                'update' => Yii::$app->user->can('gestionarServicios'),
+                                'view' =>Yii::$app->user->can('gestionarServicios'),
+                            ],
+                    ],
                 ],
             ]); 
             ?>

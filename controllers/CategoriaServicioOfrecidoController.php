@@ -70,7 +70,7 @@ class CategoriaServicioOfrecidoController extends Controller
             }
         }catch(GralException $e){
             \Yii::$app->getModule('audit')->data('errorAction', \yii\helpers\VarDumper::dumpAsString($e));
-            throw new GralException($e->getMessage());
+            throw new \yii\web\HttpException(null, $e->getMessage());
         }catch(\Exception $e){
             \Yii::$app->getModule('audit')->data('errorAction', \yii\helpers\VarDumper::dumpAsString($e));            
             if (Yii::$app->request->isAjax){

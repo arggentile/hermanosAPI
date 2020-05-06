@@ -39,15 +39,15 @@ use yii\helpers\Url;
                            'asignar' => function ($url, $model) use ($serviciosDivisiones, $modelServicioOfrecido){
                                    if(!in_array($model->id,$serviciosDivisiones))
                                        return Html::button( '<i class="glyphicon glyphicon-ok-circle"></i>',                            
-                                           ['class' => in_array($model->id, $serviciosDivisiones)?'btn btn-xs btn-primary btn-asignar disabled':'btn btn-xs btn-primary btn-asignar',
-                                            'onclick' => 'js:ppp("'.Url::to(['/servicio-ofrecido/asignar-servicio-division', 'division' => $model->id, 'servicio' => $modelServicioOfrecido->id]) .'");']
+                                           ['class' => in_array($model->id, $serviciosDivisiones)?'btn btn-xs btn-primary btn-asignar btn-asign-div-ser disabled':'btn btn-asign-div-ser btn-xs btn-primary btn-asignar',
+                                            'onclick' => 'js:asignarDivision("'.Url::to(['/servicio-ofrecido/asignar-servicio-division', 'division' => $model->id, 'servicio' => $modelServicioOfrecido->id]) .'");']
                                );  
                            },      
                            'quitar' => function ($url, $model) use ($serviciosDivisiones, $modelServicioOfrecido) {      
                                if(in_array($model->id,$serviciosDivisiones))
                                    return Html::button( '<i class="glyphicon glyphicon-remove-circle"></i>',                            
-                                       ['class' => "btn btn-xs btn-danger btn-quitar  ". in_array($model->id, $serviciosDivisiones)?'btn btn-xs btn-danger btn-quitar ':'btn btn-xs btn-danger btn-quitar disabled',
-                                           'onclick' => 'js:ppp("'.Url::to(['/servicio-ofrecido/quitar-servicio-division', 'division' => $model->id, 'servicio' => $modelServicioOfrecido->id]) .'");']
+                                       ['class' => "btn btn-xs btn-danger btn-asign-div-ser btn-quitar  ". in_array($model->id, $serviciosDivisiones)?'btn btn-xs btn-asign-div-ser btn-danger btn-quitar ':'btn btn-xs btn-asign-div-ser btn-danger btn-quitar disabled',
+                                           'onclick' => 'js:asignarDivision("'.Url::to(['/servicio-ofrecido/quitar-servicio-division', 'division' => $model->id, 'servicio' => $modelServicioOfrecido->id]) .'");']
                                        );
                                    },
                            ],
@@ -63,8 +63,11 @@ use yii\helpers\Url;
 <?php
 $this->registerJs("
     
-function ppp(xhref){      
+function asignarDivision(xhref){      
     $('body').loading({message: 'AGUARDE... procesando.'}); 
+    
+    $('.btn-asign-div-ser').attr('disabled','disabled');
+
     urlreload = $('#urlreloadservicios').val();
     $.ajax({
         url    : xhref,                   
@@ -73,14 +76,18 @@ function ppp(xhref){
             if(response.error==0){
                 reportarNotificacionGral('Asignación correcta', 'success', true);   
                 $.pjax({container: '#pjax-divisionesservicios', timeout: false, push: false,  replace:false, url: urlreload}).done(function(){
-                    $('body').loading('stop');                   
+                    $('body').loading('stop');       
+                    $('.btn-asign-div-ser').removeAttr('disabled');
                 });                            
             }else{
                 reportarNotificacionGral('No se pudo realizar la asignación', 'error', true);
                 $('body').loading('stop');
+                $('.btn-asign-div-ser').removeAttr('disabled');
             }
+            
         },
         error: function(xhr){
+            $('.btn-asign-div-ser').removeAttr('disabled');
             reportarNotificacionGral(xhr.responseText, 'error', true);   
         }
     });

@@ -58,8 +58,6 @@ class FacturaAfipService {
             $this->errores[]=$wsfev1->error;
             $this->conerror= true;  
         }else{
-
-
             $regfe['CbteTipo'] = $tipocomprobante; //FACTURA C                
             $regfe['Concepto']=1;   //1 producto 2 servicos 3 productos y servicios    
 
@@ -74,22 +72,19 @@ class FacturaAfipService {
 
             $regfe['DocNro'] = $this->nroDoc;
 
+            $regfe['CbteFch'] = date('Ymd'); 	// fecha emision de factura
+            $regfe['ImpNeto'] = $this->monto;			// neto gravado
+            $regfe['ImpTotConc'] = 0;			// no gravado
+            $regfe['ImpIVA'] = 0;			// IVA liquidado
+            $regfe['ImpTrib'] = 0;			// otros tributos
+            $regfe['ImpOpEx'] = 0;			// operacion exentas
+            $regfe['ImpTotal'] = $this->monto;			// total de la factura. ImpNeto + ImpTotConc + ImpIVA + ImpTrib + ImpOpEx
 
-
-
-            $regfe['CbteFch']=date('Ymd'); 	// fecha emision de factura
-            $regfe['ImpNeto']=$this->monto;			// neto gravado
-            $regfe['ImpTotConc']=0;			// no gravado
-            $regfe['ImpIVA']=0;			// IVA liquidado
-            $regfe['ImpTrib']=0;			// otros tributos
-            $regfe['ImpOpEx']=0;			// operacion exentas
-            $regfe['ImpTotal']=$this->monto;			// total de la factura. ImpNeto + ImpTotConc + ImpIVA + ImpTrib + ImpOpEx
-
-            $regfe['FchServDesde']=null;	// solo concepto 2 o 3
-            $regfe['FchServHasta']=null;	// solo concepto 2 o 3
-            $regfe['FchVtoPago']=null;		// solo concepto 2 o 3
-            $regfe['MonId']='PES'; 			// Id de moneda 'PES'
-            $regfe['MonCotiz']=1;			// Cotizacion moneda. Solo exportacion
+            $regfe['FchServDesde'] = null;	// solo concepto 2 o 3
+            $regfe['FchServHasta'] = null;	// solo concepto 2 o 3
+            $regfe['FchVtoPago'] = null;		// solo concepto 2 o 3
+            $regfe['MonId'] = 'PES'; 			// Id de moneda 'PES'
+            $regfe['MonCotiz'] = 1;			// Cotizacion moneda. Solo exportacion
 
 
             $nro = $wsfev1->FECompUltimoAutorizado($this->ptoVta, $tipocomprobante);
@@ -97,9 +92,7 @@ class FacturaAfipService {
             if(($nro === FALSE) || ($wsfev1->huboerror)) {
                 $this->errores[]=$wsfev1->error;
                 $this->conerror= true; 
-            }else{
-               
-        
+            }else{       
                 $this->nroFactura = $nro + 1;                     
 
                 $regfe['CbteDesde']=null; //el nro de comprobantec
@@ -112,12 +105,8 @@ class FacturaAfipService {
                         );
                 if(($cae === -1) || ($wsfev1->huboerror)) {
                     $this->errores[]= $wsfev1->error . '<br>Error al obtener CAE<br>';
-                    $this->conerror= true;
-                     var_dump("erroresSolicitar");
-                     exit;
+                    $this->conerror= true;                     
                 }else{
-                     var_dump("CAR: " . $cae['cae']);
-                     exit;
                     $this->nroCae = $cae['cae'];
                     $this->fechaVtoCae = $cae['fecha_vencimiento'];   
                 }      	

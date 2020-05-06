@@ -22,6 +22,7 @@ $config = [
         '@bower' => '@vendor/bower-asset',
         '@npm'   => '@vendor/npm-asset', 
         '@afip'   => '@app/servicios/afip', 
+        '@archivos'   => '@app/web/archivos_generados', 
     ],
     'components' => [
         'request' => [
@@ -57,6 +58,27 @@ $config = [
                     'basePath' => '@app/messages/usuario',
                     'sourceLanguage' => 'en-US',                
                 ],
+            ],
+        ],
+        /*
+        'formatter' => [
+            'class' => 'yii\i18n\Formatter',
+            'dateFormat' => 'php:d-m-Y',
+            'thousandSeparator' => '.',
+            'decimalSeparator' => ',',
+            'numberFormatterSymbols' => [
+                NumberFormatter::CURRENCY_SYMBOL => '$',
+            ]            
+        ],*/
+        'mailer' => [
+            'class' => 'yii\swiftmailer\Mailer',
+            'transport' => [
+                'class' => 'Swift_SmtpTransport',
+                'host' => 'mail.hermanosdedonbosco.com',
+                'username' => 'hermanos',
+                'password' => 'donbosco???159',
+                'port' => '587',
+                'encryption' => 'tls',
             ],
         ],
         'assetManager' => [
@@ -106,7 +128,10 @@ $config = [
         'serviceFacturaAfip'=>[
             'class'=>'app\servicios\FacturaAfipService'
         ],  
-        'urlManager' => [           
+        'serviceCaja'=>[
+            'class'=>'app\servicios\CajaServices'
+        ],  
+        'urlManager' => [         
             'enablePrettyUrl' => true,
             'showScriptName' => false,
             'rules' => [
@@ -162,6 +187,23 @@ $config = [
         ],        
     ],
     'params' => $params,
+    /*
+    'as beforeRequest' => [
+        'class' => 'yii\filters\AccessControl',
+        'rules' => [
+            [
+                'actions' => ['login', 'register','request','logout','devengar-servicio'],
+                'allow' => true,             
+            ],
+            [
+                'allow' => true,
+                'roles' => ['@'],
+            ],
+        ],
+        'denyCallback' => function($rule, $action) {
+                    return Yii::$app->response->redirect(['user/security/login']);
+         },
+    ],     */
 ];
 
 if (YII_ENV_DEV) {

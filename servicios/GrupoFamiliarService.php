@@ -100,13 +100,20 @@ class GrupoFamiliarService extends \yii\base\Component
     
     /***************************************************************/
     /***************************************************************/
-    public static function asignarResponsableFamilia($idPersona, $idGrupoFamiliar, $idTiporesponsable){        
+    public static function asignarResponsableFamilia($idPersona, $idGrupoFamiliar, $idTiporesponsable, $cabecera){        
         $transaction = Yii::$app->db->beginTransaction(); 
         try{
+            $existeIntegrante = Responsable::find()->andWhere(['id_grupofamiliar'=>$idGrupoFamiliar])
+                    ->andWhere(['id_persona'=>$idPersona])->one();
+            if($existeIntegrante)
+                throw new GralException('Ya existe la persona asignada al Grupo Familiar');
+            
             $modelResponsable = new Responsable();
             $modelResponsable->id_grupofamiliar= $idGrupoFamiliar;
             $modelResponsable->id_persona = $idPersona;
             $modelResponsable->id_tipo_responsable= $idTiporesponsable;
+            $modelResponsable->cabecera = $cabecera;
+            
             if($modelResponsable->save()){
                 $transaction->commit();
                 $response['success'] = true;

@@ -17,6 +17,7 @@ use Yii;
  * @property string $celular
  * @property string $mail
  * @property string $nivel_educativo
+ * @property string $iniciales
  *
  * @property \app\models\DivisionEscolar[] $divisionEscolars
  * @property string $aliasModel
@@ -42,7 +43,7 @@ abstract class Establecimiento extends \yii\db\ActiveRecord
         return [
             [['nombre', 'fecha_apertura', 'calle', 'telefono', 'mail', 'nivel_educativo'], 'required'],
             [['fecha_apertura'], 'safe'],
-            [['nombre'], 'string', 'max' => 50],
+            [['nombre', 'iniciales'], 'string', 'max' => 50],
             [['calle', 'mail'], 'string', 'max' => 255],
             [['telefono', 'celular'], 'string', 'max' => 30],
             [['nivel_educativo'], 'string', 'max' => 100]
@@ -63,6 +64,7 @@ abstract class Establecimiento extends \yii\db\ActiveRecord
             'celular' => 'Celular',
             'mail' => 'Mail',
             'nivel_educativo' => 'Nivel Educativo',
+            'iniciales' => 'Iniciales',
         ];
     }
 

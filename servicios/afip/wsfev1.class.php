@@ -173,8 +173,6 @@ class WSFEV1 {
         
         $e = $this->_checkErrors($results, 'FECompUltimoAutorizado');
      
-        var_dump("aaaaaaaaaaaa");
-       
         return $e == false ? $results->FECompUltimoAutorizadoResult->CbteNro : false;
     } 
         
@@ -206,8 +204,7 @@ class WSFEV1 {
 
     public function FEDummy(){
             $results = $this->client->FEDummy();
-            var_dump($results);
-            exit;
+           
 
     } 
         

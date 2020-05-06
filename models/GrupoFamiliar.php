@@ -81,12 +81,20 @@ class GrupoFamiliar extends BaseGrupoFamiliar
             if (!preg_match($patron, $this->cbu_cuenta)) {                
                 $this->addError('cbu_cuenta', 'Nro de CBU Invalido.El mismo debe poseer un formato de 22 dígitos seguidos.');
             }
+            $patronAfip = "/^[[:digit:]]{11}$/";
+            if (!preg_match($patronAfip, $this->cuil_afip_pago)) {                
+                $this->addError('cuil_afip_pago', 'Nro de CUIL Invalido.El mismo debe poseer un formato de 11 dígitos seguidos.');
+            }
         }
 
         if (($this->id_pago_asociado == '5') || ($this->id_pago_asociado == 5)) {
             $patron = "/^[[:digit:]]{16}$/";
             if (!preg_match($patron, $this->nro_tarjetacredito)) {                
                 $this->addError('nro_tarjetacredito', 'Nro de TC INVALIDO. El mismo debe posser un formato de 16 dígitos; seguidos!!!');
+            }
+            $patronAfip = "/^[[:digit:]]{11}$/";
+            if (!preg_match($patronAfip, $this->cuil_afip_pago)) {                
+                $this->addError('cuil_afip_pago', 'Nro de CUIL Invalido.El mismo debe poseer un formato de 11 dígitos seguidos.');
             }
         }
     }

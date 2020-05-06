@@ -25,7 +25,11 @@
     ?>
         
     <span class="text-light-blue text-bold"> Estado Servicio: </span>
-        <?=$model->estado->descripcion;?>  <br />
+        <?php
+        if($model->estado->id== \app\models\EstadoServicio::ID_ABIERTA)
+            echo "Abierta/Adeuda";
+        else
+            echo $model->estado->descripcion;?>  <br />
 </p>
 
     

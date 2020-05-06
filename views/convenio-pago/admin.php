@@ -32,7 +32,7 @@ $this->title = 'Convenios Pagos';
                 'dataProvider' => $dataProvider,
                 'columns' => [    
                     'id',            
-                    'descripcion',
+                    'nombre',
                     'fecha_alta:date',
                     [
                         'label' => 'Familia',

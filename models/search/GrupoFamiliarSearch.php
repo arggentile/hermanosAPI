@@ -85,7 +85,7 @@ class GrupoFamiliarSearch extends GrupoFamiliar
 
         $query->andFilterWhere(['like', 'apellidos', $this->apellidos])
             ->andFilterWhere(['like', 'descripcion', $this->descripcion])
-            ->andFilterWhere(['like', 'folio', $this->folio])
+            ->andFilterWhere(['folio'=> $this->folio])
             ->andFilterWhere(['like', 'cbu_cuenta', $this->cbu_cuenta])
             ->andFilterWhere(['like', 'nro_tarjetacredito', $this->nro_tarjetacredito])
             ->andFilterWhere(['like', 'tarjeta_banco', $this->tarjeta_banco])

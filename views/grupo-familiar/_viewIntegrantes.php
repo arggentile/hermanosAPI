@@ -74,7 +74,7 @@ GrupoFamiliarAsset::register($this);
     <div class="col-sm-6">
         <div class="box box-greenlightsite box-responsable-familia">
             <div class="box-header with-border">
-                <i class="fa fa-users"></i> <h3 class="box-title"> Responsables </h3> 
+                <i class="fa fa-users"></i> <h3 class="box-title"> Integrantes </h3> 
                 <div class="box-tools pull-right">
                     <?php
                     
@@ -102,8 +102,12 @@ GrupoFamiliarAsset::register($this);
                 if(count($responsables)>0){?>
                 <ul class="todo-list todo-list-responsables">    
                     <?php
-                    foreach($responsables as $responsable){                
-                        echo "<li> <span class='label label-warning'>". $responsable->tipoResponsable->nombre . "</span> ". $responsable->miPersona->apellido .
+                    foreach($responsables as $responsable){             
+                        echo "<li>";
+                        if($responsable->cabecera=='1')
+                            echo "<span class='label label-primary' tooltip='Responsable' title='Responsable'>R</span>";
+                        
+                        echo " <span class='label label-warning'>". $responsable->tipoResponsable->nombre . "</span> ". $responsable->miPersona->apellido .
                                 "; ".$responsable->miPersona->nombre;
                         if(Yii::$app->user->can('gestionarResponable')){
                             echo "<div class='tools tools-responsables'>";

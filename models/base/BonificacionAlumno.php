@@ -14,7 +14,7 @@ use Yii;
  * @property integer $id_alumno
  *
  * @property \app\models\Alumno $alumno
- * @property \app\models\CategoriaBonificacion $bonificacion
+ * @property \app\models\Bonificaciones $bonificacion
  * @property string $aliasModel
  */
 abstract class BonificacionAlumno extends \yii\db\ActiveRecord
@@ -39,7 +39,7 @@ abstract class BonificacionAlumno extends \yii\db\ActiveRecord
             [['id_bonificacion', 'id_alumno'], 'required'],
             [['id_bonificacion', 'id_alumno'], 'integer'],
             [['id_alumno'], 'exist', 'skipOnError' => true, 'targetClass' => \app\models\Alumno::className(), 'targetAttribute' => ['id_alumno' => 'id']],
-            [['id_bonificacion'], 'exist', 'skipOnError' => true, 'targetClass' => \app\models\CategoriaBonificacion::className(), 'targetAttribute' => ['id_bonificacion' => 'id']]
+            [['id_bonificacion'], 'exist', 'skipOnError' => true, 'targetClass' => \app\models\Bonificaciones::className(), 'targetAttribute' => ['id_bonificacion' => 'id']]
         ];
     }
 
@@ -68,7 +68,7 @@ abstract class BonificacionAlumno extends \yii\db\ActiveRecord
      */
     public function getBonificacion()
     {
-        return $this->hasOne(\app\models\CategoriaBonificacion::className(), ['id' => 'id_bonificacion']);
+        return $this->hasOne(\app\models\Bonificaciones::className(), ['id' => 'id_bonificacion']);
     }
 
 

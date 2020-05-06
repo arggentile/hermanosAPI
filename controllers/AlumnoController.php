@@ -93,7 +93,7 @@ class AlumnoController extends Controller
             'verbs' => [
                 'class' => VerbFilter::className(),
                 'actions' => [
-                    'delete' => ['POST'],
+                    'delete' => ['GET'],
                 ],
             ],
         ];
@@ -146,6 +146,7 @@ class AlumnoController extends Controller
             
             $searchModel = new AlumnoSearch();
             $dataProvider = $searchModel->search(Yii::$app->request->queryParams, $searchModelPersona);             
+           
             $data = [];
             $data['filtros'] = [];
             $data['filtros']['dropEstablecimientosSearch'] = \app\models\Establecimiento::getEstablecimientos();
@@ -482,7 +483,11 @@ class AlumnoController extends Controller
     
     public function exportarListado() 
     {  
+        ini_set('memory_limit', '-1');
+        ini_set('set_time_limite', '900');
+        ini_set('max_execution_time', 900);   
         try{
+            
             $searchModelPersona =  new \app\models\search\PersonaSearch();
             $searchModelPersona->load(Yii::$app->request->queryParams);
             
@@ -496,6 +501,7 @@ class AlumnoController extends Controller
             $contador = count($data);
 
             if ($contador > 0) {
+
                 $objPHPExcel = new Spreadsheet();  
                 $objPHPExcel->setActiveSheetIndex(0);
                 $objPHPExcel->getActiveSheet()->getColumnDimension('A')->setAutoSize(true);
@@ -511,7 +517,7 @@ class AlumnoController extends Controller
                 $objPHPExcel->getActiveSheet()->getColumnDimension('K')->setAutoSize(true);
                 $objPHPExcel->getActiveSheet()->getColumnDimension('L')->setAutoSize(true);
                 $objPHPExcel->getActiveSheet()->getColumnDimension('M')->setAutoSize(true);
-                
+
                 $this->cellColor($objPHPExcel, 'A1', 'F28A8C');
                 $this->cellColor($objPHPExcel, 'B1', 'F28A8C');
                 $this->cellColor($objPHPExcel, 'C1', 'F28A8C');
@@ -525,7 +531,7 @@ class AlumnoController extends Controller
                 $this->cellColor($objPHPExcel, 'K1', 'F28A8C');
                 $this->cellColor($objPHPExcel, 'L1', 'F28A8C');
                 $this->cellColor($objPHPExcel, 'M1', 'F28A8C');
-                
+
                 $objPHPExcel->getActiveSheet()->setCellValue('A1', 'DNI');
                 $objPHPExcel->getActiveSheet()->setCellValue('B1', 'APELLIDO');
                 $objPHPExcel->getActiveSheet()->setCellValue('C1', 'NOMBRE');
@@ -542,7 +548,7 @@ class AlumnoController extends Controller
                 
                 $letracolumnainicio = 'A';
                 $letrafilainicio = 3;
- 
+
                 while ($i < $contador) {
                     $letrafilainicio1 = (string) $letrafilainicio;
                     $columnaA = 'A' . $letrafilainicio1;
@@ -606,23 +612,23 @@ class AlumnoController extends Controller
                     $i = $i + 1;
                     $letrafilainicio += 1;
                 }  
-               
-                $carp_cont = Yii::getAlias('@webroot') . "/archivos_generados"; 
+
+                $carp_cont = Yii::getAlias('@archivos'); 
                 $nombre_archivo = "listadoAlumnos" . Yii::$app->user->id . ".xlsx";                                
                 $ruta_archivo = $carp_cont . "/" . $nombre_archivo;
-            
-                $writer = new \PhpOffice\PhpSpreadsheet\Writer\Xlsx($objPHPExcel);
-                $writer->save($ruta_archivo);     
-               
+
+                $writer = new \PhpOffice\PhpSpreadsheet\Writer\Xlsx($objPHPExcel);                
+                $writer->save($ruta_archivo);                    
                 $url_pdf = \yii\helpers\Url::to(['down-padron-excel', 'archivo' => $nombre_archivo]);               
                 return $this->redirect($url_pdf); 
-            }else{
+            }else{                           
                 Yii::$app->session->setFlash('error', 'Listado Vacio.');
             }        
         }catch (\Exception $e) {           
+           
             \Yii::$app->getModule('audit')->data('errorAction', \yii\helpers\VarDumper::dumpAsString($e)); 
             Yii::$app->session->setFlash('error', Yii::$app->params['errorExcepcion']);
-            return $this->redirect(['site/index']);            
+            return $this->redirect(['/site/index']);            
         }  
     }
     
@@ -693,14 +699,9 @@ class AlumnoController extends Controller
             $ruta_archivo = $carp_cont . "/" . $nombre_archivo;
 
             $writer = new \PhpOffice\PhpSpreadsheet\Writer\Xlsx($objPHPExcel);
-            $writer->save($ruta_archivo);                          
-
+            $writer->save($ruta_archivo); 
             $url_pdf = \yii\helpers\Url::to(['down-padron-excel', 'archivo' => $nombre_archivo]);               
             return $this->redirect($url_pdf); 
-               
-                
-            
-        
         }catch (\Exception $e) {
             Yii::error('exportar Alumnos '.$e);
             Yii::$app->session->setFlash('error', Yii::$app->params['errorExcepcion']);
@@ -770,7 +771,7 @@ class AlumnoController extends Controller
                 $establecimientoInicial = $modelEstablecimiento->nombre;
                 $divisionInicial = $modelDivision->nombre;
             
-                $searchModel = Alumno::find()->andWhere(['id_divisionescolar'=>$modelDivision->id]);
+                $searchModel = Alumno::find()->andWhere(['activo'=>'1'])->andWhere(['id_divisionescolar'=>$modelDivision->id]);
                 $dataProviderAlumnos  = new \yii\data\ActiveDataProvider([
                                     'query' => $searchModel,   
                                     
@@ -803,7 +804,11 @@ class AlumnoController extends Controller
 //      phpinfo();
 //      exit;
         try{
-                $dd = \app\models\Factura::GeneraFactura("1", "DNI", "32709735", "1500", 1);
+            $valid = true;
+            for($i =1; $i <100; $i++){
+                $dd = \app\models\Factura::avisarAfip(13, 1, "CUIL", "20327097351", 100, "2020-10-01");
+                var_dump($dd);
+            }
                \Yii::$app->getModule('audit')->data('1234', \yii\helpers\VarDumper::dumpAsString($dd));
         }catch (GralException $e){
             \Yii::$app->getModule('audit')->data('errorAction', \yii\helpers\VarDumper::dumpAsString($e));

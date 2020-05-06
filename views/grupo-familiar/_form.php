@@ -26,9 +26,9 @@ GrupoFamiliarAsset::register($this);
     ]
         ]); ?>
    
-            <?= $form->field($model, 'apellidos') ?>
-            <?= $form->field($model, 'descripcion') ?>
-      
+    <?= $form->field($model, 'apellidos') ?>
+    <?= $form->field($model, 'descripcion') ?>
+    <?= $form->field($model, 'cuil_afip_pago') ?>
 
     <div class="row">
         <div class="col-sm-5">

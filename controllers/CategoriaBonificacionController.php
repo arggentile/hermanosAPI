@@ -65,12 +65,11 @@ class CategoriaBonificacionController extends Controller
             }else{
                 $mensaje = 'No se puede realizar la eliminación. El registro se encuentra bloqueado';
                 throw new GralException($mensaje);
-                //Yii::$app->response->format = 'json';
-                //return ['error' => '1', 'mensaje' => 'No se puede realizar la eliminación. El registro se encuentra bloqueado'];    
+           
             }
         }catch(GralException $e){
             \Yii::$app->getModule('audit')->data('errorAction', \yii\helpers\VarDumper::dumpAsString($e));
-            throw new GralException($e->getMessage());
+            throw new \yii\web\HttpException(null, $e->getMessage());
         }catch(\Exception $e){
             \Yii::$app->getModule('audit')->data('errorAction', \yii\helpers\VarDumper::dumpAsString($e));            
             if (Yii::$app->request->isAjax){

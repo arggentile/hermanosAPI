@@ -18,60 +18,54 @@ $this->params['breadcrumbs'][] = $this->title;
 ?>
 <div class="box  box-colegio bonificacion-index">
     <div class="box-header with-border">
-        <i class="fa fa-users"></i> <h3 class="box-title"> Alumnos con Bonificaciones </h3>    
+        <i class="fa fa-users"></i> 
+        <h3 class="box-title"> Alumnos con Bonificaciones </h3>    
     </div>
     <div class="box-body">
         <?= $this->render('_search',['modelPersona'=>$modelPersona,]);?>        
 
         <?php Pjax::begin( [
-                                'id'=>'pjax-bonificaciones',
-                                'enablePushState' => false,
-                                'timeout'=>false,                                    
-                                ]); ?>    
+            'id'=>'pjax-bonificaciones',
+            'enablePushState' => false,
+            'timeout'=>false,                                    
+            ]); ?>    
         <?=
         GridView::widget([
             'dataProvider' => $dataProvider,           
             'columns' => [
                     [
-                    'label' => 'Bonificacion',
-                    'attribute' => 'id_bonificacion',
-                    //'filter' => dmstr\helpers\Html::activeDropDownList($searchModel, 'id_bonificacion', \app\models\CategoriaBonificacion::getBonificaciones(), ['prompt' => '', 'class' => 'form-control']),
-                    'value' => function($model) {
-                        return $model->bonificacion->descripcion . " " . $model->bonificacion->valor;
-                    },
+                        'label' => 'Bonificacion',
+                        'attribute' => 'id_bonificacion',
+                        //'filter' => dmstr\helpers\Html::activeDropDownList($searchModel, 'id_bonificacion', \app\models\CategoriaBonificacion::getBonificaciones(), ['prompt' => '', 'class' => 'form-control']),
+                        'value' => function($model) {
+                            return $model->bonificacion->descripcion . " " . $model->bonificacion->valor;
+                        },
                     ],
                     [
-                    'label' => 'Apellido',
-                    'attribute' => 'apellido_alumno',
-                    //'filter' => dmstr\helpers\Html::activeInput('text', $modelPersona, 'apellido', ['class' => 'form-control']),
-                    'value' => function($model) {
-                        return $model->alumno->persona->apellido;
-                    },
+                        'label' => 'Documento',
+                        'attribute' => 'documento_alumno',
+                        'value' => function($model) {
+                            return $model->alumno->persona->nro_documento;
+                        },
+                    ],        
+                    [
+                        'label' => 'Alumno',   
+                        'format'=>'raw',
+                        'value' => function($model) {
+                            return Html::a("<i class='fa fa-eye'></i> " . $model->alumno->persona->apellido. ", ".$model->alumno->persona->nombre,
+                                    Url::to(['/alumno/view', 'id'=>$model->alumno->id]));
+                        },
                     ],
                     [
-                    'label' => 'Nombre',
-                    'attribute' => 'nombre_alumno',
-                    //'filter' => dmstr\helpers\Html::activeInput('text', $modelPersona, 'nombre', ['class' => 'form-control']),
-                    'value' => function($model) {
-                        return $model->alumno->persona->nombre;
-                    },
-                    ],
-                    [
-                    'label' => 'Documento',
-                    'attribute' => 'documento_alumno',
-                    //'filter' => dmstr\helpers\Html::activeInput('text', $modelPersona, 'nro_documento', ['class' => 'form-control']),
-                    'value' => function($model) {
-                        return $model->alumno->persona->nro_documento;
-                    },
-                    ],
-                    [
-                    'label' => 'Familia',
-                    'attribute' => 'familia_alumno',
-                    'format' => 'raw',
-                   // 'filter' => dmstr\helpers\Html::activeInput('text', $modelPersona, 'nro_documento', ['class' => 'form-control']),
-                    'value' => function($model) {
-                        return $model->alumno->grupofamiliar->apellidos . "<span class='text text-danger'> Folio:" . $model->alumno->grupofamiliar->folio . "</span>";
-                    },
+                        'label' => 'Familia',
+                        'attribute' => 'familia_alumno',
+                        'format' => 'raw',
+                        // 'filter' => dmstr\helpers\Html::activeInput('text', $modelPersona, 'nro_documento', ['class' => 'form-control']),
+                        'value' => function($model) {
+                            return Html::a("<i class='fa fa-eye'></i> " .  $model->alumno->grupofamiliar->apellidos . "<span class='text text-danger'> Folio:" . $model->alumno->grupofamiliar->folio . "</span>",
+                                    Url::to(['/grupo-familiar/view','id'=>$model->alumno->grupofamiliar->id]));
+                        }
+                            
                     ],
                     [
                     'class' => 'yii\grid\ActionColumn',

@@ -79,10 +79,13 @@ use kartik\date\DatePicker;
         </div>
     </div>
     
-   
-    <div class="form-group">
-        <?= Html::submitButton('<i class=\'fa fa-save\'></i> Generar', 
-            ['class' => $model->isNewRecord ? 'btn btn-success' : 'btn btn-primary','id'=>'btn-envio']) ?>
+    <div class="row">
+        <div class="col-sm-6  form-group">
+
+            <?= Html::submitButton('<i class=\'fa fa-save\'></i> Generar',
+                    ['class' => 'btn btn-select btnwidth100 btn-submit-envio', 'id' => 'btn-envio'])
+            ?>
+        </div>
     </div>
 
     <?php ActiveForm::end(); ?>

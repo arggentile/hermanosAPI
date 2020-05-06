@@ -102,37 +102,34 @@ use yii\helpers\Url;
                     [
                         'class' => 'yii\grid\ActionColumn',
                         'headerOptions' => ['width' => '', 'class'=>'actionsgrid'],
-                        'template'=>'{view} {editar} {remover}',
+                        'template'=>'{view} {editar} {remover} {factura}',
                         'buttons' => 
                         [
                             'view' => function ($url, $model) {   
-                                if(Yii::$app->user->can('verDetalleServicioAlumno')){
-                                    if($model->id_estado == \app\models\EstadoServicio::ID_ABIERTA){
-                                        //$class='disabled readonly';
-                                        return Html::button( '<i class="fa fa-eye"></i>',
-                                                                   [
-                                                                       'class'=>'btn btn-primary btn-xs btn-view-detalle-servicio', 
-                                                                       'title'=>'Visualiza detalle servicio',
-                                                                        'alt'=>'Visualiza detalle servicio',
-                                                                       'url-edit'=> Url::to(['/servicio-alumno/visualizar-detalle-serivicio-alumno','id'=>$model->id])
-                                                                    ]
-                                                           );
-                                    }
+                                if(Yii::$app->user->can('verDetalleServicioAlumno')){                                   
+                                    //$class='disabled readonly';
+                                    return Html::button( '<i class="fa fa-eye"></i>',
+                                           [
+                                               'class'=>'btn btn-primary btn-xs btn-view-detalle-servicio', 
+                                               'title'=>'Visualiza detalle servicio',
+                                                'alt'=>'Visualiza detalle servicio',
+                                               'url-edit'=> Url::to(['/servicio-alumno/visualizar-detalle-serivicio-alumno','id'=>$model->id])
+                                            ]
+                                    );
+                                    
                                 }
                             },    
                             'editar' => function ($url, $model) {     
                                 if(Yii::$app->user->can('editarServicioAlumno')){
-                                    if($model->id_estado == \app\models\EstadoServicio::ID_ABIERTA){
-                                        //$class='disabled readonly';
-                                        return Html::button( '<i class="fa fa-edit"></i>',
-                                                                   [
-                                                                       'class'=>'btn btn-primary btn-xs btn-edit-servicio', 
-                                                                       'title'=>'Edita el servicio al alumno',
-                                                                        'alt'=>'Edita el servicio al alumno',
-                                                                       'url-edit'=> Url::to(['/servicio-alumno/action-editar-serivicio-alumno','idservicio'=>$model->id])
-                                                                    ]
-                                                           );
-                                    }
+                                    return Html::button( '<i class="fa fa-edit"></i>',
+                                           [
+                                               'class'=>'btn btn-primary btn-xs btn-edit-servicio', 
+                                               'title'=>'Edita el servicio al alumno',
+                                                'alt'=>'Edita el servicio al alumno',
+                                               'url-edit'=> Url::to(['/servicio-alumno/action-editar-serivicio-alumno','idservicio'=>$model->id])
+                                            ]
+                                    );
+                                    
                                 }
                             },    
                             'remover' => function ($url, $model) {     
@@ -158,6 +155,18 @@ use yii\helpers\Url;
                                 }
 
                                }, 
+                            'factura' => function ($url, $model) {     
+                                $estadoAbonadas= [\app\models\EstadoServicio::ID_ABONADA, \app\models\EstadoServicio::ID_ABONADA_EN_CONVENIOPAGO, \app\models\EstadoServicio::ID_ABONADA_EN_DEBITOAUTOMATICO];
+                                $modelFactura =     $model->getMiFactura();
+                                if(in_array($model->id_estado, $estadoAbonadas) && !empty($modelFactura)) {
+                                    return Html::a( '<i class="fa fa-file-pdf-o"></i>', Url::to(['caja/pdf-factura','idFactura'=>$modelFactura->id]),
+                                        [
+                                        'class'=>'btn btn-xs', 
+                                        'title'=>'Imprimir Factura',
+                                        'alt'=>'Imprimir Factura'
+                                        ]);
+                                }
+                            },            
                         ],
                     ],             
                 ],

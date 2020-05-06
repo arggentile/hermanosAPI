@@ -110,12 +110,18 @@ yii\bootstrap\Modal::end();
       <div class="row">
         <div class="col-sm-8 col-sm-offset-2">
             <p>
-                <?= Html::button('<i class="glyphicon glyphicon-floppy-save"></i>  Archivo', ['class' => 'btn btn-primary','id'=>'btn-down-archivo',
+                <?php
+                if($model->getSePuedeEliminar())
+                    echo Html::button('<i class="glyphicon glyphicon-trash"></i>',  
+                        [ 'class' => 'btn btn-danger btn-eliminar-debito', 'data-url'=>Url::to(['/debito-automatico/eliminar','id'=>$model->id]),
+                            ]); ?>
+                
+                <?= Html::button('<i class="glyphicon glyphicon-floppy-save"></i> Arc.Envio', ['class' => 'btn btn-primary','id'=>'btn-down-archivo',
                         'onclick'=>'js:{downArchivoBanco("'.Url::to(['/debito-automatico/descargar-archivo-envio','id'=>$model->id]) .'");}']); ?>
                 
-                <?= Html::button('<i class="glyphicon glyphicon-hand-right"></i>  Convertir a Excel', ['value'=>yii\helpers\Url::to(['convertir-a-excel', 'id' => $model->id]), 'class' => 'btn btn-success','id'=>'btn-verificar']) ?>
+                <?= Html::button('<i class="glyphicon glyphicon-hand-right"></i>  Excel', ['value'=>yii\helpers\Url::to(['convertir-a-excel', 'id' => $model->id]), 'class' => 'btn btn-success','id'=>'btn-verificar']) ?>
             
-               <?= Html::button('Procesar Devolución', ['value'=> yii\helpers\Url::to(['procesar','id'=>$model->id]), 'class' => 'btn btn-primary', 'id'=>'btn-procesa']) ?>
+               <?= Html::button('<i class="glyphicon glyphicon-hand-right"></i>  Procesar Devolución', ['value'=> yii\helpers\Url::to(['procesar','id'=>$model->id]), 'class' => 'btn btn-primary', 'id'=>'btn-procesa']) ?>
             </p>    
         </div>
       </div>
@@ -159,6 +165,13 @@ yii\bootstrap\Modal::end();
                                 
                             },
                         ], 
+                        [
+                            'label' => 'Importe',
+                            'value' => function($model) {
+                                return $model->importe;
+                                
+                            },
+                        ],             
                         [
                             'label' => 'Familia',
                             'filter' => Html::activeInput('text',$searchItemsDebitos, 'id_familia', ['class'=>'form-control']),

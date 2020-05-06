@@ -17,7 +17,7 @@ use yii\widgets\ActiveForm;
     <div class="row">
         <div class="col-sm-6">
 
-        <?= $form->field($model, 'id_bonificacion')->dropDownList(app\models\CategoriaBonificacion::getDetalleBonificacionesActivasDrop(),
+        <?= $form->field($model, 'id_bonificacion')->dropDownList(app\models\Bonificaciones::getDetalleBonificacionesActivasAlumnoDrop(),
                     ['class' => 'form-control',
                     'prompt'=>'Seleccione Bonificación'])->label(false); ?>
         </div>

@@ -165,13 +165,11 @@ function eliminarcuota(nrocuota){
 ///****************************************/
 
 $('#form-convenio').on('beforeValidate',function(e){
-    $('#btn-envio').attr('disabled','disabled');
-    $('#btn-envio').html('<i class=\'fa fa-spinner fa-spin\'></i> Procesando...');        
+    $('.btn-submit-envio').button('loading');
 });
 $('#form-convenio').on('afterValidate',function(e, messages){
     if ($('#form-convenio').find('.has-error').length > 0){
-        $('#btn-envio').removeAttr('disabled');
-        $('#btn-envio').html('<i class=\'fa fa-save\'></i> Guardar...');
+        $('.btn-submit-envio').button('reset');
     }
 });    
 
