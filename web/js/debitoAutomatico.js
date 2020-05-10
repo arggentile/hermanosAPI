@@ -51,6 +51,10 @@ function downArchivoBanco(xhref){
     }); 
 } 
 
+$("body").on("beforeSubmit", "form#form-procesamiento", function () { 
+    $('.btn-procesar').button('loading');
+});
+
 $('body').on('click', '.btn-eliminar-debito', function(e){
  
         e.preventDefault();

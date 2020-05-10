@@ -5,7 +5,6 @@ use yii\widgets\DetailView;
 use kartik\form\ActiveForm;
 use yii\helpers\Url;
 
-
 use app\assets\DebitoAutomaticoAssets;
 DebitoAutomaticoAssets::register($this);
 
@@ -33,7 +32,7 @@ yii\bootstrap\Modal::begin([
             
             echo "<input type='file' id='DebitoAutomatico_archivoentrante' name='DebitoAutomatico[archivoentrante]' size='40' />";
             echo Html::submitButton('<i class=\'fa fa-save\'></i> Guardar', 
-                   ['class' => $model->isNewRecord ? 'btn btn-success' : 'btn btn-primary','id'=>'btn-envio']);
+                   ['class' => $model->isNewRecord ? 'btn btn-success' : 'btn btn-primary btn-procesar','data-loading-text'=>'Aguarde Procesando...']);
             
             ActiveForm::end(); 
         echo "</div>";
@@ -97,6 +96,7 @@ yii\bootstrap\Modal::end();
                                            return "<span class='bg bg-blue'> Si </span>"; 
                                     }
                                 ],
+                                
                             ],
                         ]); ?>
 
@@ -186,7 +186,21 @@ yii\bootstrap\Modal::end();
                                 return $model->detalleAlumno;
                             },
                         ], 
-                        'resultado_procesamiento',                         
+                        'resultado_procesamiento',  
+                        'id_servicio',  
+                        [
+                            'label' => 'Tiket',  
+                            'format'=>'raw',
+                            'value' => function($model){
+                                if(!empty($model->getMiTiket()))
+                                return 
+                                dmstr\helpers\Html::button('<i class="glyphicon glyphicon-print"> </i>', ['class' => 'btn btn-warning btn-pdf-tiket',
+                                'onclick'=>'js:{downFactura("'. yii\helpers\Url::to(['/caja/pdf-tiket','idTiket'=>$model->getMiTiket()->id]) .'");}']);
+                       
+                                else
+                                   return "<span class='bg bg-blue'> S/N </span>"; 
+                            }
+                        ],                   
                     ],
                 ]); ?>
         <?php \yii\widgets\Pjax::end(); ?>

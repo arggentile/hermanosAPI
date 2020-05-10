@@ -97,7 +97,7 @@ class DebitoAutomaticoController extends Controller
     }
     
     
-    public function actionEliminar($id){
+    public function actionEliminar($id) {
         try{
             $transaction = Yii::$app->db->beginTransaction(); 
             $response = Yii::$app->serviceDebitoAutomatico->eliminarDebitoAutomatico($id);
@@ -241,60 +241,6 @@ class DebitoAutomaticoController extends Controller
     
     /*******************************************************/
     /*******************************************************/     
-    private function ProcesarPatagoniaTc1($id) {
-        $transaction = Yii::$app->db->beginTransaction();
-        try {
-            $model= $this->findModel($id);
-            $filename = Yii::getAlias('@webroot') . "/archivos_generados/patagonia/tc/devoluciones/debitos-" . $model->id.".txt";
-            $result = true;
-            
-            if (!file_exists($filename)) {
-                $valid = false;
-                $transaction->rollBack();
-                return
-                    ['error'=>'1','success'=>false, 'resultado'=>'No se encontró el archivo para su procesamiento.'];
-            } else {                 
-                $file = fopen($filename, "r");
-                
-                $totalIngreso = 0;
-                $itemsCorrectos = 0;
-                $itemsErrores = 0;
-
-                
-                $nrolinea = -1;
-                
-                $descripcionLinea = '';
-                while(!feof($file)){  
-                   
-                    $linea = fgets($file);
-                    $nrolinea += 1;
-                    if ($nrolinea == 0)
-                        continue;
-
-                    //$nro_tarjeta = substr($linea, 26, 16);
-                    $folio_familia = substr($linea, 87, 8);
-                    $folio_familia = (int) $folio_familia;
-                    $resultado_proceso = substr($linea, 130, 10);
-                    
-                    $fecha_pago = "20" . substr($linea, 54, 2)."-". substr($linea, 52, 2)."-".substr($linea, 50, 2);
-                    
-                    $monto_debitado = (float) (substr($linea, 67, 6) . "." . substr($linea, 75, 2));
-                    $monto_debitado = number_format($monto_debitado, 2, ".", ",");
-                    $monto_debitado = str_replace(",", "", $monto_debitado);
-                    
-                    
-                    
-                
-                    //$procfactura = \app\models\Factura::GeneraFactura($ptoVta, 'DNI', $documento , $modelTiket->importe, $modelTiket->id);
-                }
-            }
-        
-        } catch (Exception $e) {
-            return -1;
-        }
-    }
-    
-    
     private function ProcesarPatagoniaTc($id) {
         $transaction = Yii::$app->db->beginTransaction();
         try {
@@ -393,121 +339,7 @@ class DebitoAutomaticoController extends Controller
     
     
     
-    private function ProcesarPatagoniaCBU($id) {
-        $transaction = Yii::$app->db->beginTransaction();
-        try {
-            $model= $this->findModel($id);
-            
-            $filename = Yii::getAlias('@webroot') . "/archivos_generados/patagonia/cbu/devoluciones/debitos" . $model->id.".txt";
-            $valid = true;
-
-            $idServicioFacturar = [];
-            
-            if (!file_exists($filename)) {
-                $valid = false;
-                $transaction->rollBack();
-                return
-                    ['error'=>'1','success'=>false, 'resultado'=>'No se encontró el archivo para su procesamiento.'];
-            } else {                
-                $file = fopen($filename, "r");
-                
-                $totalIngreso = 0;
-                $itemsCorrectos = 0; 
-                $itemsInCorrectos = 0; 
-                
-                $nrolinea = -1;
-                
-                while(!feof($file)){  
-                    $linea = fgets($file);
-                    $nrolinea += 1;
-                    if ($nrolinea == 0)
-                        continue;
-
-                    $idFamilia = (int) substr($linea, 37, 5);
-                    $nro_cbu = substr($linea, 12, 22);
-                    $resultado_proceso = substr($linea, 151, 3);                    
-                    $serviciomatricula= trim(substr($linea, 89, 15));        
-                    $fechaArchivo = substr($linea, 56, 8);  
-                    $fechaArchivo = \app\helpers\Fecha::formatear($fechaArchivo, 'dmY', 'Y-m-d');   
-                    /*
-                    if($fechaArchivo!=$model->fecha_debito)
-                        throw new GralException('Fechas registros incompatibles');
-                    */
-                    //buscamos todos lo servicios asociados al debito de la familia
-                    $serviciosEnDebAut = \app\models\ServicioDebitoAutomatico::find()
-                            ->andWhere(['id_debitoautomatico' => $id])
-                            ->andWhere(['id_familia' => $idFamilia]) 
-                            ->all();
-                    //reccoremos todos los servicios asociados a la linea familia del archivo
-                    if(!empty($serviciosEnDebAut)){
-                        foreach($serviciosEnDebAut as $modelServicioDebAut){     
-                            $textoResultado = $resultado_proceso;
-                            $modelResultadoCBU = \app\models\ResultadoCbuPatagonia::find()->andWhere(['like', 'codigo', $resultado_proceso])->one();
-                            if(!empty($modelResultadoCBU))
-                                $textoResultado.=" ".$modelResultadoCBU->descripcion;
-                            
-                            $modelServicioDebAut->resultado_procesamiento = $textoResultado;
-                            
-                            $idEstado = ($resultado_proceso=='R00')?\app\models\EstadoServicio::ID_ABONADA_EN_DEBITOAUTOMATICO:\app\models\EstadoServicio::ID_ABIERTA;
-                            if($modelServicioDebAut->tiposervicio== \app\models\DebitoAutomatico::ID_TIPOSERVICIO_SERVICIOS){
-                                $modelServicioAlumno = \app\models\ServicioAlumno::findOne($modelServicioDebAut->id_servicio);                              
-                                $modelServicioAlumno->id_estado = $idEstado;
-                                $modelServicioAlumno->importe_abonado += $modelServicioDebAut->importe;
-                                $valid = $valid && $modelServicioAlumno->save() && $modelServicioDebAut->save();
-                                $totalIngreso += $modelServicioDebAut->importe;
-                                $itemsCorrectos += 1;
-                            }else
-                            if($modelServicioDebAut->tiposervicio == \app\models\DebitoAutomatico::ID_TIPOSERVICIO_CONVENIO_PAGO){
-                                $modelCCP = \app\models\CuotaConvenioPago::findOne($modelServicioDebAut->id_servicio);                               
-                                $modelCCP->id_estado = $idEstado;
-                                $modelCCP->importe_abonado += $modelServicioDebAut->importe;
-                                $valid = $valid && $modelCCP->save() && $modelServicioDebAut->save();
-                                $totalIngreso += $modelServicioDebAut->importe;;
-                                $itemsCorrectos += 1;
-                            }                    
-                            if(resultado_proceso=='R00'){
-                                array_push($idServicioFacturar,$idFamilia );
-                            }
-                        }
-                    }                    
-                }               
-                
-                $model->procesado='1';
-                $model->registros_correctos=$itemsCorrectos;
-                $model->saldo_entrante=$totalIngreso;
-                
-                
-                if($valid && $model->save()){
-                    $transaction->commit();
-                    //generamos los tiket 
-                    $modelsServiciosAbonados = 
-                    
-                    
-                                        
-                    
-                    
-                    
-                    if(!empty($idServicioFacturar) && count($idServicioFacturar)>0) {
-                        foreach($idServicioFacturar as $ifFamilia){
-                            $saldo = 
-                            $factura = 
-                        }
-                    }
-                    
-                    return ['error'=>'0', 'success'=>true, 'resultado'=>'EL ARCHIVO SE PROCESO CON EXITO'];                    
-                }else{
-                    $transaction->rollBack();                
-                    return ['error'=>'1', 'success'=>false, 'resultado'=>'NO SE PUDO PROCESAR EL ARCHIVO'];
-                }
-            }
-        }catch (\Exception $e) {
-            (isset($transaction) && $transaction->isActive)?$transaction->rollBack():'';
-            throw new \yii\web\HttpException(500, $e->getMessage()); 
-        }catch (\Exception $e) {
-            (isset($transaction) && $transaction->isActive)?$transaction->rollBack():'';
-            throw new \yii\web\HttpException(500, $e->getMessage()); 
-        }
-    }      
+          
     
     
     public function actionProcesar($id){
@@ -517,47 +349,30 @@ class DebitoAutomaticoController extends Controller
             if (Yii::$app->request->isPost) {
                 $model->archivoentrante = UploadedFile::getInstance($model, 'archivoentrante');
                 
-                    if($model->tipo_archivo == DebitoAutomatico::ID_TIPODEBITO_TC)                        
-                        $ruta = Yii::getAlias('@webroot') . "/archivos_generados/patagonia/tc/devoluciones/debitos".$model->id.".txt";  
-                    else
-                    if($model->tipo_archivo == DebitoAutomatico::ID_TIPODEBITO_CBU)
-                        $ruta = Yii::getAlias('@webroot') . "/archivos_generados/patagonia/cbu/devoluciones/debitos".$model->id.".txt";
+                if($model->tipo_archivo == DebitoAutomatico::ID_TIPODEBITO_TC)                        
+                    $ruta = Yii::getAlias('@webroot') . "/archivos_generados/patagonia/tc/devoluciones/debitos".$model->id.".txt";  
+                elseif($model->tipo_archivo == DebitoAutomatico::ID_TIPODEBITO_CBU)
+                    $ruta = Yii::getAlias('@webroot') . "/archivos_generados/patagonia/cbu/devoluciones/debitos".$model->id.".txt";
             
-                //$ruta = Yii::getAlias('@webroot') . "/archivos_generados/patagonia/cbu/devoluciones/debitos".$model->id.".txt";
-
                 if($model->archivoentrante->saveAs($ruta)){
-                    if($model->tipo_archivo == DebitoAutomatico::ID_TIPODEBITO_TC){
-                        
-                        $result = $this->ProcesarPatagoniaTc($model->id); 
-                    
+                    $response = Yii::$app->serviceDebitoAutomatico->procesarDebitoAutomatico($model->id);            
+                    if($response['success']){                       
+                        Yii::$app->session->setFlash('ok', 'Se generó con éxito ');
+                        return $this->redirect(['view', 'id' => $model->id]);               
                     }
-            
-                    if($model->tipo_archivo == DebitoAutomatico::ID_TIPODEBITO_CBU)
-                        $result = $this->ProcesarPatagoniaCBU($model->id); 
-            
-                    if ($result['success'] === false )
-                        Yii::$app->session->setFlash('error', 'ERROR!!!.');
-                    if ($result['success'])
-                        Yii::$app->session->setFlash('ok', 'EXITO!!!. SE PROCESO CORRECTAMENTE EL ARCHIVO!!!.');
-                    
-                    return $this->redirect(['view','id'=>$id]);
+                    else                     
+                        Yii::$app->session->setFlash('error', 'No se puede generar el archivo. No existen servicios en el periodo mencionado.');
                 }                
                 else
                     throw  new GralException("No se puede grabar el archivo para su procesamiento");
             }
-        }catch (GralException $e) {
-            (isset($transaction) && $transaction->isActive)?$transaction->rollBack():'';
+        }catch (GralException $e) {           
             Yii::app()->user->setFlash('error', $e->getMessage());
             $this->redirect(['administrar']);
-        }catch (Exception $e) {
-            (isset($transaction) && $transaction->isActive)?$transaction->rollBack():'';
+        }catch (Exception $e) {       
             Yii::app()->user->setFlash('error', 'ATENCION!!! <br /> Se Produjo un error severo');
             $this->redirect(['administrar']);
         }
-        
-        return $this->renderAjax('procesar',[
-            'model'=>$model,                        
-        ]);
     }    
     
     /********************************************************************/   

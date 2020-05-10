@@ -15,6 +15,8 @@ class Tiket extends BaseTiket
     public $importe_servicios;    
     public $dni_cliente;
     
+    const SCENARIOCOBROSERVICIOS = 'scenariocobroservicios';
+    const SCENARIODEBITOAUTOMATICO = 'scenariodebitoautomatico';
     
     public function behaviors()
     {
@@ -40,6 +42,14 @@ class Tiket extends BaseTiket
         );
     }
     
+    public function scenarios()
+    {
+        $scenarios = parent::scenarios();
+        $scenarios[self::SCENARIOCOBROSERVICIOS] = ['*'];
+        $scenarios[self::SCENARIODEBITOAUTOMATICO] = ['*'];
+        return $scenarios;
+    }
+    
     public function rules()
     {
         return ArrayHelper::merge(
@@ -52,7 +62,7 @@ class Tiket extends BaseTiket
                 ['dni_cliente','required'],
                 [['dni_cliente'],'rulesDniValido'],
                 
-                [['fecha_tiket'],'rulesFechaPagoHabilitado'],
+                [['fecha_tiket'],'rulesFechaPagoHabilitado','on' => self::SCENARIOCOBROSERVICIOS],
                 //[['importe'],'rulesControlImportesAbonado'], 
              ]
         );

@@ -7,23 +7,20 @@ namespace app\models\base;
 use Yii;
 
 /**
- * This is the base-model class for table "servicio_debito_automatico".
+ * This is the base-model class for table "debito_automatico_registro".
  *
  * @property integer $id
  * @property integer $id_debitoautomatico
- * @property integer $id_servicio
- * @property string $tiposervicio
- * @property string $resultado_procesamiento
- * @property string $linea
  * @property integer $id_familia
- * @property double $importe
+ * @property string $monto
+ * @property string $resultado
  * @property boolean $correcto
  *
  * @property \app\models\DebitoAutomatico $debitoautomatico
  * @property \app\models\GrupoFamiliar $familia
  * @property string $aliasModel
  */
-abstract class ServicioDebitoAutomatico extends \yii\db\ActiveRecord
+abstract class DebitoAutomaticoRegistro extends \yii\db\ActiveRecord
 {
 
 
@@ -33,7 +30,7 @@ abstract class ServicioDebitoAutomatico extends \yii\db\ActiveRecord
      */
     public static function tableName()
     {
-        return 'servicio_debito_automatico';
+        return 'debito_automatico_registro';
     }
 
     /**
@@ -42,11 +39,11 @@ abstract class ServicioDebitoAutomatico extends \yii\db\ActiveRecord
     public function rules()
     {
         return [
-            [['id_debitoautomatico', 'id_servicio', 'id_familia', 'importe'], 'required'],
-            [['id_debitoautomatico', 'id_servicio', 'id_familia'], 'integer'],
-            [['importe'], 'number'],
+            [['id_debitoautomatico', 'id_familia', 'monto'], 'required'],
+            [['id_debitoautomatico', 'id_familia'], 'integer'],
+            [['monto'], 'number'],
             [['correcto'], 'boolean'],
-            [['tiposervicio', 'resultado_procesamiento', 'linea'], 'string', 'max' => 255],
+            [['resultado'], 'string', 'max' => 255],
             [['id_debitoautomatico'], 'exist', 'skipOnError' => true, 'targetClass' => \app\models\DebitoAutomatico::className(), 'targetAttribute' => ['id_debitoautomatico' => 'id']],
             [['id_familia'], 'exist', 'skipOnError' => true, 'targetClass' => \app\models\GrupoFamiliar::className(), 'targetAttribute' => ['id_familia' => 'id']]
         ];
@@ -60,12 +57,9 @@ abstract class ServicioDebitoAutomatico extends \yii\db\ActiveRecord
         return [
             'id' => 'ID',
             'id_debitoautomatico' => 'Id Debitoautomatico',
-            'id_servicio' => 'Id Servicio',
-            'tiposervicio' => 'Tiposervicio',
-            'resultado_procesamiento' => 'Resultado Procesamiento',
-            'linea' => 'Linea',
             'id_familia' => 'Id Familia',
-            'importe' => 'Importe',
+            'monto' => 'Monto',
+            'resultado' => 'Resultado',
             'correcto' => 'Correcto',
         ];
     }

@@ -38,7 +38,10 @@ class CajaServices {
         else
         if($tipoPago == FormaPago::ID_POSNET_TC || $tipoPago == FormaPago::ID_POSTNET_TD)
             return \app\models\Cuentas::ID_CAJA_PATAGONIA;
-        
+        else
+            if($tipoPago == FormaPago::ID_DEBITO_CBU || $tipoPago == FormaPago::ID_DEBITO_TC)
+                return \app\models\Cuentas::ID_CAJA_PATAGONIA;
+       
         throw new GralException('Forma de Pago no aceptada para el cobro por Caja');
     }
     
@@ -135,6 +138,8 @@ class CajaServices {
                 \Yii::$app->getModule('audit')->data('errorModeloTiket', \yii\helpers\VarDumper::dumpAsString($modelTiket->errors));  
                 $transactionTiket->rollBack();
                 $errorsTiket = $modelTiket->errors; 
+                var_dump($modelTiket->errors);
+                exit;
             }
             
             $response['generoTiket'] = $generoFactura;

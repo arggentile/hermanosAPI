@@ -12,6 +12,9 @@ use Yii;
 use yii\web\Controller;
 use yii\web\NotFoundHttpException;
 use yii\data\ActiveDataProvider;
+use kartik\mpdf\Pdf;
+
+use \app\helpers\GralException;
 
 /**
  * Description of CajaController
@@ -209,5 +212,129 @@ class CajaController extends \yii\web\Controller {
             'serviciosTiket'=>$serviciosTiket
         ]);   
     }
+    
+    
+    /*********************************************************************/
+        /*
+     * Arma un modelo de plantilla para el tiket; detallando su detales y servicios en modo html;
+     * el mismo puede ser enviado apantalla o incrustado en un pdf
+     */
+    private function armarPdfFactura($idFactura, $idTiket, $idCliente) {
+       
+        $modelFactura = \app\models\Factura::findOne($idFactura);
+        $modelTiket = \app\models\Tiket::findOne($idTiket);
+        $cliente = \app\models\GrupoFamiliar::findOne($idCliente);
+
+        $encabezado = "<table border='1' cellpadding='0' cellspacing='0'  style='width:100%;'>";
+        $encabezado .= "<thead>
+                            <tr>
+                            <td style='width:50%; text-align:center; font-size: 10px; padding-top: 8px; padding-bottom: 8px;'>
+                                <img src='./images/logodonbsco2.png' alt='logo' class='img-responsive'/><br />
+                            </td>
+                            <td style='width:50%; text-align:center;'>
+                                <br />
+                                <b> Recibo C </b> <br />
+                                <b> Nro ". \str_pad($modelTiket->id, 8, "0", \STR_PAD_LEFT) . "</b> <br />
+                                <b> Fecha: " . \Yii::$app->formatter->asDate($modelTiket->fecha_pago) . "</b>
+                                    
+                            </td>
+                        </tr>
+                        <tr> 
+                        <td style='padding:8px;' colspan='2'>
+                            <b> Familia: </b> " . $cliente->apellidos ." (Folio: ".$cliente->folio. " )<br />
+                        </td>                    
+                       </tr>
+                       </thead>";
+
+        $cuerpo = "<tbody><tr> 
+                     <td  tyle='padding-top: 10px; padding-bottom:10px;' colspan='2'>";
+        $cuerpo .= "<table border='0' cellpadding='0' cellspacing='0'  style='width:100%;'>";
+        $cuerpo .= "<tr><td style='padding-left: 8px; padding-right:8px;'> <b> En concepto de: </b><br /><br /></td></tr>";
+
+        //buscamos los servicios de la factura
+        $serviciosTiket = \app\models\ServiciosTiket::find()->where(['id_tiket' =>  $modelTiket->id])->all();
+        if (count($serviciosTiket) == 0) {
+            $cuerpo .= "<tr><td style='padding-left: 8px; padding-right:8px;'> " . $modelTiket->detalles . "</td></tr>";
+        } else {
+            foreach ($serviciosTiket as $servicio) {                
+                    $cuerpo .= "<tr><td style='padding-left: 8px; padding-right:8px;'>" . $servicio->miDetalleFactura . "</td></tr>";                   
+                
+            }
+        }
+        $cuerpo .= "</table>";
+        $cuerpo .= '</td></tr></tbody>';
+
+        $pie = "<tr><td colspan='2' style='text-align:right; padding-top:10px;padding-right:10px;'>TOTAL:  ";
+        $pie .= " $ $modelTiket->importe</td></tr>";
+        
+        $pie .= '</tfoot></table>';
+
+        $html = $encabezado . $cuerpo . $pie;
+        return $html;
+    } 
+    
+    public function actionPdfTiket() {
+        try{
+            $idTiket = Yii::$app->request->get('idTiket');
+            $modelTiket = \app\models\Tiket::findOne($idTiket);
+            if (empty($modelTiket))
+                throw new GralException('El tiket no existe.');
+            
+            $modelFactura = \app\models\Factura::find()->andWhere(['id_tiket'=>$idTiket])->one();
+            if (empty($modelFactura))
+                throw new GralException('La factura no existe.');
+            
+            $cliente = \app\models\GrupoFamiliar::findOne($modelTiket->id_cliente);
+            if (empty($cliente))
+                throw new GralException('Cliente no enconrado.');
+            
+            $plantilla = $this->armarPdfFactura($modelFactura->id, $modelTiket->id, $cliente->id); 
+            
+            $carp_cont = Yii::getAlias('@webroot') . "/archivos_generados"; //carpeta a almacenar los archivos
+            $nombre_archivo = "tiket-" . $modelTiket->id . ".pdf";
+            $archivo = $carp_cont . '/' . $nombre_archivo;
+            
+            $pdf = new Pdf([
+                'mode' => Pdf::MODE_CORE,
+                'format' => Pdf::FORMAT_A4,
+                'orientation' => Pdf::ORIENT_PORTRAIT,
+                'destination' => Pdf::DEST_BROWSER,                
+                'options' => ['title' => 'Krajee Report Title'],
+                'methods' => [
+                    'SetHeader' => ['Krajee Report Header'],
+                    'SetFooter' => ['{PAGENO}'],
+                ]
+            ]);
+            
+            $pdf->output($plantilla, $archivo, 'F');
+            $url_pdf = \yii\helpers\Url::to(['/caja/down-pdf', 'name' => $nombre_archivo]);
+            Yii::$app->response->format = 'json';
+            return ['result_error' => '0', 'result_texto' => $url_pdf];
+            //return $this->redirect($url_pdf);
+        }catch(GralException $e) {
+            \Yii::$app->getModule('audit')->data('errorAction', \yii\helpers\VarDumper::dumpAsString($e));
+            throw new \yii\web\HttpException(500, $e->getMessage());
+        }catch(Exception $e) {
+            \Yii::$app->getModule('audit')->data('errorAction', \yii\helpers\VarDumper::dumpAsString($e));
+            throw new \yii\web\HttpException(500, $e->getMessage());
+        }
+    }
+
+    /*
+     * Inicia la descarga delpdf en el navegador
+     */
+    public function actionDownPdf($name) {
+        $carp_cont = Yii::getAlias('@webroot') . "/archivos_generados"; //carpeta a almacenar los archivos
+        $archivo = $carp_cont . '/' . $name;
+        if (is_file($archivo)) {
+            $size = filesize($archivo);
+            header("Content-Type: application/force-download");
+            header("Content-Disposition: attachment; filename=$name");
+            header("Content-Transfer-Encoding: binary");
+            header("Content-Length: " . $size);
+            readfile($archivo);
+            unlink($archivo);
+        }
+    } // FIN DescargaPdfConvenio     
     
 }

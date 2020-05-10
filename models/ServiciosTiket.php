@@ -35,4 +35,15 @@ class ServiciosTiket extends BaseServiciosTiket
             ]
         );
     }
+    
+    public function getMiDetalleFactura(){
+        if($this->tiposervicio == self::ID_SERVICIOS){
+            $modelServicioAlumno = ServicioAlumno::findOne($this->id_servicio);
+            return $modelServicioAlumno->servicio->categoriaservicio->descripcion . " " .$modelServicioAlumno->servicio->nombre . " " . $this->monto_abonado; 
+        }elseif($this->tiposervicio == self::ID_CUOTA_CP){
+            $modelCuotaCP = CuotaConvenioPago::findOne($this->id_servicio);
+            return "CP: " . $modelCuotaCP->conveniopago->nombre . " Nro Cuota: " . $modelCuotaCP->nro_cuota . " " . $this->monto_abonado; 
+            
+        }
+    }
 }
