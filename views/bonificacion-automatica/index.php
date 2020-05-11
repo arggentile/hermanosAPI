@@ -87,7 +87,7 @@ function ayuda(){
         doneLabel:'Cerrar',
         steps: [      
             { 
-                intro: "Administración de Bonificaciones."
+                intro: "Paneles de administración/gestion generales."
             },  
             {
                 element: document.querySelector('.grid-view .filters'),
@@ -106,4 +106,3 @@ function ayuda(){
       intro.start();
 }      
 </script>
-

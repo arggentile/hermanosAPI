@@ -13,6 +13,7 @@ class Alumno extends BaseAlumno
 {
 
     public $establecimiento;
+    public $folio_familia;
     
     public function behaviors()
     {
@@ -30,6 +31,7 @@ class Alumno extends BaseAlumno
              parent::rules(),
              [
                 ['establecimiento','safe'],
+                ['folio_familia','safe'],
                 ['hijo_profesor','required'],
                 ['fecha_ingreso', 'date', 'format' => 'php:Y-m-d'],
                 ['xfecha_ingreso', 'date', 'format' => 'php:d-m-Y', 'message'=>'Ingrese una fecha valida'],

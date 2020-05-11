@@ -76,7 +76,7 @@ function ayuda(){
         doneLabel:'Cerrar',
         steps: [      
             { 
-                intro: "Administracion de Categorización Responsables"
+                intro: "Paneles de administración/gestion generales."
             },  
             {
                 element: document.querySelector('.grid-view .filters'),

@@ -56,8 +56,9 @@ use yii\grid\GridView;
                         [
                             'label' => 'Responsable',
                             'attribute'=>'responsable',
+                            'format'=>'raw',
                             'value' => function($model) {
-                                return $model->miResponsableCabecera;
+                                return $model->getMisResponsablesCabecera();
                             },
                         ],                
                                    

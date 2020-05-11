@@ -48,6 +48,12 @@ class AlumnoController extends Controller
                         'roles' => ['cargarAlumno'],
                     ],
                     [     
+                        'actions' => ['pruebaFactura','pruebaCorreo'],
+                        'allow' => true,
+                        'roles' => ['cargarAlumno'],
+                    ],
+                     
+                    [     
                         'actions' => ['view'],
                         'allow' => true,
                         'roles' => ['visualizarAlumno'],
@@ -73,7 +79,7 @@ class AlumnoController extends Controller
                         'roles' => ['gestionarBonificacionAlumno'],
                     ],
                     [     
-                        'actions' => ['mis-divisionesescolares','hola'],
+                        'actions' => ['mis-divisionesescolares'],
                         'allow' => true,                       
                     ],
                     [     
@@ -449,30 +455,7 @@ class AlumnoController extends Controller
                 return ['error' => '1', 'mensaje' =>  Yii::$app->params['errorExcepcion']];
             }
         }
-    }  
-
-    public function actionBonificacionesAlumno(){   
-        try{
-            $export = Yii::$app->request->get('export');
-            if(isset($export) && $export==1)
-                return $this->exportarListadoBonificaciones();
-            
-            $modelPersona =  new \app\models\search\PersonaSearch();
-            $modelPersona->load(Yii::$app->request->queryParams);
-        
-            $searchModelBonificacion = new \app\models\search\BonificacionAlumnoSearch();
-            $dataProviderBonificacion = $searchModelBonificacion->search(Yii::$app->request->queryParams, $modelPersona);
-        }catch (\Exception $e) {
-            \Yii::$app->getModule('audit')->data('errorAction', \yii\helpers\VarDumper::dumpAsString($e)); 
-            Yii::$app->session->setFlash('error', Yii::$app->params['errorExcepcion']);                      
-        }   
-        
-        return $this->render('reporteBonificaciones/bonificacionesalumno',[
-            'searchModel' => $searchModelBonificacion,
-            'dataProvider' => $dataProviderBonificacion,
-            'modelPersona'=> $modelPersona,
-        ]);
-    }
+    }      
     
     /*******************************************************************/
     /******************** exportacion a excel **************************/            
@@ -633,6 +616,29 @@ class AlumnoController extends Controller
     }
     
     /********************************************************/
+    public function actionBonificacionesAlumno(){   
+        try{
+            $export = Yii::$app->request->get('export');
+            if(isset($export) && $export==1)
+                return $this->exportarListadoBonificaciones();
+            
+            $modelPersona =  new \app\models\search\PersonaSearch();
+            $modelPersona->load(Yii::$app->request->queryParams);
+        
+            $searchModelBonificacion = new \app\models\search\BonificacionAlumnoSearch();
+            $dataProviderBonificacion = $searchModelBonificacion->search(Yii::$app->request->queryParams, $modelPersona);
+        }catch (\Exception $e) {
+            \Yii::$app->getModule('audit')->data('errorAction', \yii\helpers\VarDumper::dumpAsString($e)); 
+            Yii::$app->session->setFlash('error', Yii::$app->params['errorExcepcion']);                      
+        }   
+        
+        return $this->render('reporteBonificaciones/bonificacionesalumno',[
+            'searchModel' => $searchModelBonificacion,
+            'dataProvider' => $dataProviderBonificacion,
+            'modelPersona'=> $modelPersona,
+        ]);
+    }
+    
     public function exportarListadoBonificaciones() { 
         try{
             $modelPersona =  new \app\models\search\PersonaSearch();
@@ -800,7 +806,7 @@ class AlumnoController extends Controller
         ]);      
     }
     
-    public function actionHola(){
+    public function pruebaFactura(){
 //      phpinfo();
 //      exit;
         try{

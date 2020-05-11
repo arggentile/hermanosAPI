@@ -47,6 +47,7 @@ $this->params['breadcrumbs'][] = $this->title;
                 [
                     'label' => "Hijos: <i class='fa fa-user'></i>Activos  <span class='text-red'><i class='fa fa-user text-red'></i>Inactivos</span>",  
                     'format'=>'raw',
+                    'headerOptions' => ['class'=>'hijosalumnos'],
                     'encodeLabel' => false,
                     'value' => function($model) {
                         $detalleHijos='';
@@ -139,8 +140,16 @@ function ayuda(){
                 intro: "Listado de Familias."
             },  
             {
-                element: document.querySelector('.grid-view .filters'),
+                element: document.querySelector('.grupo-familiar-search'),
                 intro: "Filtros para realizar busquedas específicas."
+            },            
+            {
+                element: document.querySelector('.grid-view tbody'),
+                intro: "El resultado de la busqueda sera desplegado en esta sección."
+            },           
+            {
+                element: document.querySelector('.hijosalumnos'),
+                intro: "Hijos Alumnos, que tuvieron contacto con algun Establecimiento."
             },            
             {
                 element: document.querySelector('.pagoasociado'),
@@ -151,7 +160,7 @@ function ayuda(){
                 intro: "Alta de Grupo Familiar."
             },
             {
-                element: document.querySelector('#btn-excel'),
+                element: document.querySelector('.btn-export'),
                 intro: "Descargar listado en excel."
             },
         ]

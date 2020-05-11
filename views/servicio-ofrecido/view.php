@@ -26,7 +26,7 @@ $this->params['breadcrumbs'][] = $this->title;
             
         </p>  
         <br />
-        <div class="box box-primary box-colegio ">
+        <div class="box box-primary box-colegio box-servicios-devengados">
             <div class="box-header with-border">
                 <i class="fa fa-cogs"></i> <h3 class="box-title"> Devengamiento </h3>
                 <p class="pull-right">
@@ -73,20 +73,20 @@ function ayuda(){
                 intro: 'Información basica.'
             },
             {
-                element: document.querySelector('.actionsservicio'),
+                element: document.querySelector('#drop-menu-servicioOfrecido'),
                 intro: 'Botonera para su gestión.'
             },
             {
-                element: document.querySelector('#btn-devenarServicio'),
-                intro: 'Botón para iniciar el devengamiento.'
+                element: document.querySelector('#btn-devenarServicioOfrecido'),
+                intro: 'Botón para iniciar el devengamiento, el mismo devengara el servicio a los alumnos activos de las divisiones asociadas al Servicio en cuestion.'
             },
             {
-                element: document.querySelector('#btn-eliminardevengamiento'),
-                intro: 'Botón para quitar el devengamiento.'
+                element: document.querySelector('#btn-eliminarDevengamientoServicioOfrecido'),
+                intro: 'Botón para quitar el devengamiento, el proceso borra la asociacion del servicio con los alumno. '
             },          
             
             {
-                element: document.querySelector('#seachSA'),
+                element: document.querySelector('.box-servicios-devengados'),
                 intro: 'Listan los servicios de los alumos a cuales se devengo el servicio actual.'
             }               
             

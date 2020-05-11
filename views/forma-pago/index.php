@@ -75,7 +75,7 @@ function ayuda(){
         doneLabel:'Cerrar',
         steps: [      
             { 
-                intro: "Administración de Pagos Habilitados."
+                intro: "Paneles de administración/gestion generales."
             },  
             {
                 element: document.querySelector('.grid-view .filters'),

@@ -129,19 +129,19 @@ function ayuda(){
         steps: [      
             { 
                 element: document.querySelector('.box-header'),
-                intro: "Administración de Servicios Ofrecidos. "
+                intro: "Listado de Servicios Ofrecidos. "
             },  
-            { 
-                element: document.querySelector('#grid-serviciosofrecidos'),
-                intro: "Listado de servicios cargados en el sistema."
-            },
             {
-                element: document.querySelector('.grid-view .filters'),
+                element: document.querySelector('.servicio-ofrecido-search'),
                 intro: "Filtros para realizar busquedas especificas, puede especificar más de un dato."
             },            
             {
                 element: document.querySelector('.grid-view tbody'),
                 intro: "El resultado de la busqueda sera desplegado en esta sección."
+            },
+            {
+                element: document.querySelector('.btn-export'),
+                intro: "Si desea exportar el listado, presione el boton."
             },
             {
                 element: document.querySelector('.btn-alta'),

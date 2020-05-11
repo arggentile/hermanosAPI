@@ -15,6 +15,7 @@ class AlumnoSearch extends Alumno
     public $familia;
     public $establecimiento;
     public $inicial;
+    public $folio_familia;
     //public $con_servicios;
     
     /**
@@ -25,7 +26,8 @@ class AlumnoSearch extends Alumno
         return [
             [['id', 'id_persona', 'id_grupofamiliar', 'id_divisionescolar'], 'integer'],
             [['fecha_ingreso', 'nro_legajo', 'familia', 'establecimiento','inicial','hijo_profesor'], 'safe'],
-            [['activo','egresado'], 'boolean'],      
+            [['activo','egresado'], 'boolean'], 
+            ['folio_familia','safe'],
             
         ];
     }
@@ -72,8 +74,7 @@ class AlumnoSearch extends Alumno
             ]);
         }
         
-        
-        $this->load($params);
+       $this->load($params);
 
         if (!$this->validate()) {
             // uncomment the following line if you do not want to return any records when validation fails
@@ -95,6 +96,7 @@ class AlumnoSearch extends Alumno
         
     
         $query->andFilterWhere(['=','egresado', $this->egresado]);
+        $query->andFilterWhere(['=','f.folio', $this->folio_familia]);
 
         if(!empty($this->establecimiento)){
             // grid filtering conditions

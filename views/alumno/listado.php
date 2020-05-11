@@ -21,7 +21,11 @@ $this->params['breadcrumbs'][] = $this->title;
         <i class="fa fa-users"></i> <h3 class="box-title"> Administración de Alumnos </h3>    
     </div>
     <div class="box-body">
-        <?= $this->render('_searchListado',['model'=>$searchModel, 'modelPersona'=>$searchModelPersona, 'filtros'=> $data['filtros']]);?>
+        <?= $this->render('_searchListado',[
+                    'model'=>$searchModel, 
+                    'modelPersona'=>$searchModelPersona, 
+                    'filtros'=> $data['filtros']
+                ]);?>
          
         
        
@@ -207,7 +211,7 @@ function ayuda(){
                 intro: "Listado de Alumnos."
             },  
             {
-                element: document.querySelector('.grid-view .filters'),
+                element: document.querySelector('.grupo-familiar-search'),
                 intro: "Filtros para realizar busquedas."
             },            
             {
@@ -223,7 +227,7 @@ function ayuda(){
                 intro: "Acciones para visualizar o editar alumno."
             },
             {
-                element: document.querySelector('.btn-excel'),
+                element: document.querySelector('.btn-export'),
                 intro: "Descargar archivo excel con detalle del listado."
             },
         ]

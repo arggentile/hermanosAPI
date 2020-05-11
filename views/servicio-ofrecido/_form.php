@@ -50,7 +50,7 @@ use kartik\widgets\DatePicker;
         </div>
     </div>
 
-    <div class="row">
+    <div class="row rowperiodo">
         <div class="col-sm-4">
             <?= $form->field($model, 'xfecha_inicio',[
                     'inputTemplate' => '<div class="input-group"><i class="input-group-addon"><i class="glyphicon glyphicon-usd"></i></i>{input}</div>',
@@ -123,8 +123,7 @@ use kartik\widgets\DatePicker;
                                             ['prompt'=>'Seleccione..',
                                              'options'=>[$model->activo=>['Selected'=>true]]]) ?>
           
-        </div>
-       
+        </div>       
     </div>
         
     <div class="box-footer">
@@ -170,13 +169,22 @@ function ayuda(){
             {
                 element: document.querySelector('#servicioofrecido-importe'),
                 intro: 'Importe del servicio.'
-            },            
+            },  
             {
                 element: document.querySelector('#servicioofrecido-importe_hijoprofesor'),
                 intro: 'Importe para los hijos de profesores.'
-            },             
+            },   
             {
-                element: document.querySelector('#btn-envio'),
+                element: document.querySelector('.rowperiodo'),
+                intro: 'Especifique el periodo en el que inicia y finaliza el servicio.'
+            },  
+            {
+                element: document.querySelector('#servicioofrecido-xfecha_vencimiento'),
+                intro: 'Especifique la fecha de vencimiento.  La misma especifica a partir de cuando comienza a considerarse como deudor un cliente si no abona el mismo',
+            },  
+                      
+            {
+                element: document.querySelector('.btn-submit-envio'),
                 intro: 'Para concretar el alta presione sobre este botón.'
             },
         ]

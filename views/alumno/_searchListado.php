@@ -16,14 +16,17 @@ use yii\helpers\Url;
     ]); ?>
     
     <div class="row">
-        <div class="col-sm-4">
+        <div class="col-sm-2">
             <?= $form->field($modelPersona, 'nro_documento')->input('text', ['placeholder'=>'Nº documento'])?>
         </div>
-        <div class="col-sm-4">
+        <div class="col-sm-3">
             <?= $form->field($modelPersona, 'apellido')->input('text', ['placeholder'=>'Apellido']) ?>    
         </div>
-        <div class="col-sm-4">
+        <div class="col-sm-3">
             <?= $form->field($modelPersona, 'nombre')->input('text', ['placeholder'=>'Nombre']) ?>    
+        </div>
+        <div class="col-sm-2">
+            <?= $form->field($model, 'folio_familia')->input('text', ['placeholder'=>'Folio']) ?>    
         </div>
     </div>
     

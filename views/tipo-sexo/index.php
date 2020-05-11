@@ -77,7 +77,7 @@ function ayuda(){
         doneLabel:'Cerrar',
         steps: [      
             { 
-                intro: "Administración de Generos."
+                intro: "Paneles de administración/gestion generales."
             },  
             {
                 element: document.querySelector('.grid-view .filters'),

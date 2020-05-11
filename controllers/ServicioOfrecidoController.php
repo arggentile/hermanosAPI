@@ -43,12 +43,7 @@ class ServicioOfrecidoController extends Controller
                         'actions' => ['divisiones-asociadas','asociar-division','asignar-servicio-division','quitar-servicio-division'],   
                         'allow' => true,
                         'roles' => ['gestionarServicios'],
-                    ],
-                    [      
-                        'actions' => [],   
-                        'allow' => true,
-                        //'roles' => [''],
-                    ],
+                    ],                   
                     [     
                         'actions' => ['devengar-servicio','eliminar-devengamiento'],
                         'allow' => true,       

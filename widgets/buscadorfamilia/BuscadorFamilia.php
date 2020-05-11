@@ -18,7 +18,7 @@ class BuscadorFamilia extends \yii\bootstrap\Widget
     public function run()
     {        
         try{
-            echo $this->render('index', [
+            return $this->render('index', [
                 'searchModel' => $this->searchModel,
                 'dataProvider' => $this->dataProvider
             ]);

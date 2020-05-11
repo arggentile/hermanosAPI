@@ -125,6 +125,28 @@ class GrupoFamiliar extends BaseGrupoFamiliar
             return "";        
     }
     
+    public function getMisResponsablesCabecera(){
+            $query = Responsable::find();
+            $query->joinWith(['persona p']);
+        
+            $query->andFilterWhere(['id_grupofamiliar' => $this->id]);
+            $query->andFilterWhere(['cabecera' => 1]);
+            
+            $query->andFilterWhere(['like', 'p.apellido', $this->responsable]);
+            $query->andFilterWhere(['like', 'p.nombre', $this->responsable]);        
+            $query->andFilterWhere(['like', 'p.nro_documento', $this->responsable]);
+
+            $responsables = $query->all();
+            
+            $return = '';
+            
+            if(count($responsables) >0){
+                foreach($responsables as $responsable)
+                    $return .= $responsable->persona->apellido . " " . $responsable->persona->nombre ."<br />";
+            }
+            return $return;
+    }
+    
     /*
     public function getResponsableD(){
         if(!empty($this->id)){

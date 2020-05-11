@@ -102,7 +102,7 @@ use yii\helpers\Url;
                     [
                         'class' => 'yii\grid\ActionColumn',
                         'headerOptions' => ['width' => '', 'class'=>'actionsgrid'],
-                        'template'=>'{view} {editar} {remover} {factura}',
+                        'template'=>'{view} {editar} {remover}',
                         'buttons' => 
                         [
                             'view' => function ($url, $model) {   
@@ -120,7 +120,7 @@ use yii\helpers\Url;
                                 }
                             },    
                             'editar' => function ($url, $model) {     
-                                if(Yii::$app->user->can('editarServicioAlumno')){
+                                if(Yii::$app->user->can('editarServicioAlumno') && $model->id_estado == app\models\EstadoServicio::ID_ABIERTA){
                                     return Html::button( '<i class="fa fa-edit"></i>',
                                            [
                                                'class'=>'btn btn-primary btn-xs btn-edit-servicio', 
@@ -133,7 +133,7 @@ use yii\helpers\Url;
                                 }
                             },    
                             'remover' => function ($url, $model) {     
-                                if(Yii::$app->user->can('eliminarServicioAlumno')){
+                                if(Yii::$app->user->can('eliminarServicioAlumno') && $model->id_estado == app\models\EstadoServicio::ID_ABIERTA ){
                                     if($model->id_estado != \app\models\EstadoServicio::ID_ABIERTA){
                                         $class='disabled readonly';
                                         return Html::button( '<i class="fa fa-remove"></i>',
@@ -155,6 +155,14 @@ use yii\helpers\Url;
                                 }
 
                                }, 
+                        ],
+                    ],    
+                    [
+                        'class' => 'yii\grid\ActionColumn',
+                        'headerOptions' => ['width' => '', 'class'=>'actionsgrid'],
+                        'template'=>'{factura}',
+                        'buttons' => 
+                        [
                             'factura' => function ($url, $model) {     
                                 $estadoAbonadas= [\app\models\EstadoServicio::ID_ABONADA, \app\models\EstadoServicio::ID_ABONADA_EN_CONVENIOPAGO, \app\models\EstadoServicio::ID_ABONADA_EN_DEBITOAUTOMATICO];
                                 $modelFactura =     $model->getMiFactura();
@@ -166,9 +174,9 @@ use yii\helpers\Url;
                                         'alt'=>'Imprimir Factura'
                                         ]);
                                 }
-                            },            
-                        ],
-                    ],             
+                            },          
+                        ] 
+                    ]
                 ],
             ]); 
             ?>

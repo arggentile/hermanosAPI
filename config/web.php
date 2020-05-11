@@ -24,6 +24,12 @@ $config = [
         '@afip'   => '@app/servicios/afip', 
         '@archivos'   => '@app/web/archivos_generados', 
     ],
+    'container' => [
+        'definitions' => [
+            'yii\widgets\LinkPager' => ['maxButtonCount' => 5],
+            'yii\data\Pagination'=>['pageSizeLimit' => [1, 10],]
+        ],
+    ],
     'components' => [
         'request' => [
             // !!! insert a secret key in the following (if it is empty) - this is required by cookie validation
