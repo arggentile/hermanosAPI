@@ -6,7 +6,6 @@ return [
     'username' => 'hermanos_app',
     'password' => '$?NoaH$?159',
     'charset' => 'utf8',
-
     // Schema cache options (for production environment)
     //'enableSchemaCache' => true,
     //'schemaCacheDuration' => 60,

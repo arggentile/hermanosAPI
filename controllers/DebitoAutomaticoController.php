@@ -141,8 +141,7 @@ class DebitoAutomaticoController extends Controller
             $filter['tipoarchivo'] = [
                     DebitoAutomatico::ID_TIPODEBITO_CBU => 'Debito CBU', 
                     DebitoAutomatico::ID_TIPODEBITO_TC => 'Tarjeta Credito'
-                    ];
-            
+                    ];            
         } catch (Exception $e) {
             \Yii::$app->getModule('audit')->data('errorAction', \yii\helpers\VarDumper::dumpAsString($e));             
             Yii::$app->session->setFlash('error', Yii::$app->params['errorExcepcion']);
@@ -162,14 +161,13 @@ class DebitoAutomaticoController extends Controller
             
             $searchItemsDebitos = new \app\models\search\ServicioDebitoAutomaticoSearch();
             $searchItemsDebitos->id_debitoautomatico = $model->id;             
-            $dataMisDebitos = $searchItemsDebitos->search(Yii::$app->request->queryParams);              
+            $dataMisDebitos = $searchItemsDebitos->search(Yii::$app->request->queryParams); 
         }
         catch(\Exception $e)
         {
             Yii::app()->user->setFlash('error','ERROR SEVERO EN LA CARGA DEL ARCHIVO!!!');
             $this->redirect(array('administrar'));   
         }
-        
         
         return $this->render('view',[
             'model'=>$model,
@@ -241,106 +239,100 @@ class DebitoAutomaticoController extends Controller
     
     /*******************************************************/
     /*******************************************************/     
-    private function ProcesarPatagoniaTc($id) {
-        $transaction = Yii::$app->db->beginTransaction();
-        try {
-            $model= $this->findModel($id);
-            
-            $filename = Yii::getAlias('@webroot') . "/archivos_generados/patagonia/tc/devoluciones/debitos".$model->id.".txt";
-            $valid = true;
-
-            if (!file_exists($filename)) {
-                $valid = false;
-                $transaction->rollBack();
-                return
-                    ['error'=>'1','success'=>false, 'resultado'=>'No se encontró el archivo para su procesamiento.'];
-            } else {                
-                $file = fopen($filename, "r");
-                
-                $totalIngreso = 0;
-                $itemsCorrectos = 0; 
-                $itemsInCorrectos = 0; 
-                
-                $nrolinea = -1;
-                
-                while(!feof($file)){  
-                    $linea = fgets($file);
-                    $nrolinea += 1;
-                    if ($nrolinea == 0)
-                        continue;
-
-                    $idFamilia = (int) substr($linea, 86, 8);
-                    $detallesResultadoproceeso = substr($linea, 129, 32);
-                    $resultado_proceso = substr($linea, 129, 3);
-                    
-                    $fecha_pago = substr($linea, 50, 6);
-                    $fecha_pago1 = \app\helpers\Fecha::formatear($fecha_pago, 'dmy', 'Y-m-d');
-                    
-                    
-                    
-                    /*
-                    if($fechaArchivo!=$model->fecha_debito)
-                        throw new GralException('Fechas registros incompatibles');
-                    */
-                    //buscamos todos lo servicios asociados al debito de la familia
-                    $serviciosEnDebAut = \app\models\ServicioDebitoAutomatico::find()
-                            ->andWhere(['id_debitoautomatico' => $id])
-                            ->andWhere(['id_familia' => $idFamilia]) 
-                            ->all();
-                    //reccoremos todos los servicios asociados a la linea familia del archivo
-                    if(!empty($serviciosEnDebAut)){
-                        foreach($serviciosEnDebAut as $modelServicioDebAut){     
-                            $textoResultado = $resultado_proceso;
-                            
-                            $modelServicioDebAut->resultado_procesamiento = $detallesResultadoproceeso;
-                            
-                            $idEstado = ($resultado_proceso=='000')?\app\models\EstadoServicio::ID_ABONADA_EN_DEBITOAUTOMATICO:\app\models\EstadoServicio::ID_ABIERTA;
-                            if($modelServicioDebAut->tiposervicio== \app\models\DebitoAutomatico::ID_TIPOSERVICIO_SERVICIOS){
-                                $modelServicioAlumno = \app\models\ServicioAlumno::findOne($modelServicioDebAut->id_servicio);                              
-                                $modelServicioAlumno->id_estado = $idEstado;
-                                $modelServicioAlumno->importe_abonado += $modelServicioDebAut->importe;
-                                $valid = $valid && $modelServicioAlumno->save() && $modelServicioDebAut->save();
-                                $totalIngreso += $modelServicioDebAut->importe;
-                                $itemsCorrectos += 1;
-                            }else
-                            if($modelServicioDebAut->tiposervicio == \app\models\DebitoAutomatico::ID_TIPOSERVICIO_CONVENIO_PAGO){
-                                $modelCCP = \app\models\CuotaConvenioPago::findOne($modelServicioDebAut->id_servicio);                               
-                                $modelCCP->id_estado = $idEstado;
-                                $modelCCP->importe_abonado += $modelServicioDebAut->importe;
-                                $valid = $valid && $modelCCP->save() && $modelServicioDebAut->save();
-                                $totalIngreso += $modelServicioDebAut->importe;;
-                                $itemsCorrectos += 1;
-                            }                    
-                        }
-                    }                    
-                }               
-                
-                $model->procesado='1';
-                $model->registros_correctos=$itemsCorrectos;
-                $model->saldo_entrante=$totalIngreso;
-                
-                if($valid && $model->save()){
-                    $transaction->commit();
-                    return ['error'=>'0', 'success'=>true, 'resultado'=>'EL ARCHIVO SE PROCESO CON EXITO'];                    
-                }else{
-                    $transaction->rollBack();                
-                    return ['error'=>'1', 'success'=>false, 'resultado'=>'NO SE PUDO PROCESAR EL ARCHIVO'];
-                }
-            }
-        }catch (\Exception $e) {
-            (isset($transaction) && $transaction->isActive)?$transaction->rollBack():'';
-            throw new \yii\web\HttpException(500, $e->getMessage()); 
-        }catch (\Exception $e) {
-            (isset($transaction) && $transaction->isActive)?$transaction->rollBack():'';
-            throw new \yii\web\HttpException(500, $e->getMessage()); 
-        }
-    }      
-    
-    
-    
-    
-          
-    
+//    private function ProcesarPatagoniaTc($id) {
+//        $transaction = Yii::$app->db->beginTransaction();
+//        try {
+//            $model= $this->findModel($id);
+//            
+//            $filename = Yii::getAlias('@webroot') . "/archivos_generados/patagonia/tc/devoluciones/debitos".$model->id.".txt";
+//            $valid = true;
+//
+//            if (!file_exists($filename)) {
+//                $valid = false;
+//                $transaction->rollBack();
+//                return
+//                    ['error'=>'1','success'=>false, 'resultado'=>'No se encontró el archivo para su procesamiento.'];
+//            } else {                
+//                $file = fopen($filename, "r");
+//                
+//                $totalIngreso = 0;
+//                $itemsCorrectos = 0; 
+//                $itemsInCorrectos = 0; 
+//                
+//                $nrolinea = -1;
+//                
+//                while(!feof($file)){  
+//                    $linea = fgets($file);
+//                    $nrolinea += 1;
+//                    if ($nrolinea == 0)
+//                        continue;
+//
+//                    $idFamilia = (int) substr($linea, 86, 8);
+//                    $detallesResultadoproceeso = substr($linea, 129, 32);
+//                    $resultado_proceso = substr($linea, 129, 3);
+//                    
+//                    $fecha_pago = substr($linea, 50, 6);
+//                    $fecha_pago1 = \app\helpers\Fecha::formatear($fecha_pago, 'dmy', 'Y-m-d');
+//                    
+//                    
+//                    
+//                    /*
+//                    if($fechaArchivo!=$model->fecha_debito)
+//                        throw new GralException('Fechas registros incompatibles');
+//                    */
+//                    //buscamos todos lo servicios asociados al debito de la familia
+//                    $serviciosEnDebAut = \app\models\ServicioDebitoAutomatico::find()
+//                            ->andWhere(['id_debitoautomatico' => $id])
+//                            ->andWhere(['id_familia' => $idFamilia]) 
+//                            ->all();
+//                    //reccoremos todos los servicios asociados a la linea familia del archivo
+//                    if(!empty($serviciosEnDebAut)){
+//                        foreach($serviciosEnDebAut as $modelServicioDebAut){     
+//                            $textoResultado = $resultado_proceso;
+//                            
+//                            $modelServicioDebAut->resultado_procesamiento = $detallesResultadoproceeso;
+//                            
+//                            $idEstado = ($resultado_proceso=='000')?\app\models\EstadoServicio::ID_ABONADA_EN_DEBITOAUTOMATICO:\app\models\EstadoServicio::ID_ABIERTA;
+//                            if($modelServicioDebAut->tiposervicio== \app\models\DebitoAutomatico::ID_TIPOSERVICIO_SERVICIOS){
+//                                $modelServicioAlumno = \app\models\ServicioAlumno::findOne($modelServicioDebAut->id_servicio);                              
+//                                $modelServicioAlumno->id_estado = $idEstado;
+//                                $modelServicioAlumno->importe_abonado += $modelServicioDebAut->importe;
+//                                $valid = $valid && $modelServicioAlumno->save() && $modelServicioDebAut->save();
+//                                $totalIngreso += $modelServicioDebAut->importe;
+//                                $itemsCorrectos += 1;
+//                            }else
+//                            if($modelServicioDebAut->tiposervicio == \app\models\DebitoAutomatico::ID_TIPOSERVICIO_CONVENIO_PAGO){
+//                                $modelCCP = \app\models\CuotaConvenioPago::findOne($modelServicioDebAut->id_servicio);                               
+//                                $modelCCP->id_estado = $idEstado;
+//                                $modelCCP->importe_abonado += $modelServicioDebAut->importe;
+//                                $valid = $valid && $modelCCP->save() && $modelServicioDebAut->save();
+//                                $totalIngreso += $modelServicioDebAut->importe;;
+//                                $itemsCorrectos += 1;
+//                            }                    
+//                        }
+//                    }                    
+//                }               
+//                
+//                $model->procesado='1';
+//                $model->registros_correctos=$itemsCorrectos;
+//                $model->saldo_entrante=$totalIngreso;
+//                
+//                if($valid && $model->save()){
+//                    $transaction->commit();
+//                    return ['error'=>'0', 'success'=>true, 'resultado'=>'EL ARCHIVO SE PROCESO CON EXITO'];                    
+//                }else{
+//                    $transaction->rollBack();                
+//                    return ['error'=>'1', 'success'=>false, 'resultado'=>'NO SE PUDO PROCESAR EL ARCHIVO'];
+//                }
+//            }
+//        }catch (\Exception $e) {
+//            (isset($transaction) && $transaction->isActive)?$transaction->rollBack():'';
+//            throw new \yii\web\HttpException(500, $e->getMessage()); 
+//        }catch (\Exception $e) {
+//            (isset($transaction) && $transaction->isActive)?$transaction->rollBack():'';
+//            throw new \yii\web\HttpException(500, $e->getMessage()); 
+//        }
+//    }      
     
     public function actionProcesar($id){
         try{
@@ -355,23 +347,24 @@ class DebitoAutomaticoController extends Controller
                     $ruta = Yii::getAlias('@webroot') . "/archivos_generados/patagonia/cbu/devoluciones/debitos".$model->id.".txt";
             
                 if($model->archivoentrante->saveAs($ruta)){
-                    $response = Yii::$app->serviceDebitoAutomatico->procesarDebitoAutomatico($model->id);            
+                    $response = Yii::$app->serviceDebitoAutomatico->procesarDebitoAutomatico($model->id);  
                     if($response['success']){                       
                         Yii::$app->session->setFlash('ok', 'Se generó con éxito ');
                         return $this->redirect(['view', 'id' => $model->id]);               
                     }
                     else                     
-                        Yii::$app->session->setFlash('error', 'No se puede generar el archivo. No existen servicios en el periodo mencionado.');
+                        Yii::$app->session->setFlash('error', $response['resultado']);
                 }                
                 else
                     throw  new GralException("No se puede grabar el archivo para su procesamiento");
             }
-        }catch (GralException $e) {           
+            return $this->redirect(['view','id'=>$id]);
+        }catch (GralException $e) { 
             Yii::app()->user->setFlash('error', $e->getMessage());
-            $this->redirect(['administrar']);
-        }catch (Exception $e) {       
+            return $this->redirect(['view','id'=>$id]);
+        }catch(Exception $e) {
             Yii::app()->user->setFlash('error', 'ATENCION!!! <br /> Se Produjo un error severo');
-            $this->redirect(['administrar']);
+            return $this->redirect(['view','id'=>$id]);
         }
     }    
     
@@ -551,7 +544,7 @@ class DebitoAutomaticoController extends Controller
     /*****************************************************************/
     public function actionConvertirAExcel($id){
         ini_set('memory_limit', -1);
-        set_time_limit(240);
+        set_time_limit(-1);
         try{
             $modelDA = $this->findModel($id);
         

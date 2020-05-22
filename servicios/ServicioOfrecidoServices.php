@@ -76,8 +76,7 @@ class ServicioOfrecidoServices {
             }else{
                 $transaction->rollBack();
                 $response['success'] = false;
-                $response['mensaje'] = 'Carga incorrecta';
-                \Yii::$app->getModule('audit')->data('sd', json_encode($nuevoModelo->errors)); 
+                $response['mensaje'] = 'Carga incorrecta';               
                 $response['error_models'] =   $nuevoModelo->errors; 
             }
             return $response;
@@ -117,8 +116,7 @@ class ServicioOfrecidoServices {
             }else{
                 $transaction->rollBack();
                 $response['success'] = false;
-                $response['mensaje'] = 'Actualización incorrecta';
-                \Yii::$app->getModule('audit')->data('sd', json_encode($nuevoModelo->errors)); 
+                $response['mensaje'] = 'Actualización incorrecta';               
                 $response['error_models'] =   $nuevoModelo->errors; 
             }
             return $response;
@@ -152,8 +150,7 @@ class ServicioOfrecidoServices {
             }else{
                 $transaction->rollBack();
                 $response['success'] = false;
-                $response['mensaje'] = 'Carga incorrecta';
-                \Yii::$app->getModule('audit')->data('sd', json_encode($modelServicioEstablecimiento->errors)); 
+                $response['mensaje'] = 'Carga incorrecta';                
                 $response['error_models'] =   $modelServicioEstablecimiento->errors; 
             }
             return $response;
@@ -194,8 +191,7 @@ class ServicioOfrecidoServices {
             }else{
                 $transaction->rollBack();
                 $response['success'] = false;
-                $response['mensaje'] = 'Carga incorrecta';
-                \Yii::$app->getModule('audit')->data('sd', json_encode($modelServicioEscolar->errors)); 
+                $response['mensaje'] = 'Carga incorrecta';                
                 $response['error_models'] =   $modelServicioEscolar->errors; 
             }
             return $response;
@@ -221,8 +217,8 @@ class ServicioOfrecidoServices {
      */
     public function devengarServicio($idServicioOfrecido = null) {
         ini_set('memory_limit', '-1');
-        ini_set('set_time_limite', '900');
-        ini_set('max_execution_time', 900);
+        ini_set('set_time_limite', '-1');
+        ini_set('max_execution_time', '-1');
         $transaction = Yii::$app->db->beginTransaction();
         try {
             $connection= \Yii::$app->db; 
@@ -249,7 +245,7 @@ class ServicioOfrecidoServices {
                     (	SELECT al.id_grupofamiliar as id_familia, count(al.id_grupofamiliar) as canthijosfamilia FROM alumno al INNER JOIN grupo_familiar fam ON (al.id_grupofamiliar = fam.id) WHERE al.activo = '1' and (al.egresado='0' or egresado is null) GROUP BY al.id_grupofamiliar ORDER BY `id_familia` ASC
                     ) as B ON (B.id_familia = a.id_grupofamiliar)";
             
-            $where = 'WHERE sa.id is null';
+            $where = "WHERE (a.activo = '1' and (a.egresado='0' or egresado is null)) && sa.id is null";
             if($idServicioOfrecido !== null){
                 $where.=" and (so.devengamiento_automatico = '1')  and so.id=".$idServicioOfrecido;    
             }

@@ -55,7 +55,7 @@ class FacturaAfipService {
         $wsfev1->openTA();
 
         if($wsfev1->huboerror){
-            $this->errores[]=$wsfev1->error;
+            $this->errores[]=$wsfev1->errores;
             $this->conerror= true;  
         }else{
             $regfe['CbteTipo'] = $tipocomprobante; //FACTURA C                
@@ -90,7 +90,7 @@ class FacturaAfipService {
             $nro = $wsfev1->FECompUltimoAutorizado($this->ptoVta, $tipocomprobante);
 
             if(($nro === FALSE) || ($wsfev1->huboerror)) {
-                $this->errores[]=$wsfev1->error;
+                $this->errores[]=$wsfev1->errores;
                 $this->conerror= true; 
             }else{       
                 $this->nroFactura = $nro + 1;                     
@@ -104,7 +104,7 @@ class FacturaAfipService {
                             $regfe// los datos a facturar
                         );
                 if(($cae === -1) || ($wsfev1->huboerror)) {
-                    $this->errores[]= $wsfev1->error . '<br>Error al obtener CAE<br>';
+                    $this->errores[]= $wsfev1->errores;
                     $this->conerror= true;                     
                 }else{
                     $this->nroCae = $cae['cae'];

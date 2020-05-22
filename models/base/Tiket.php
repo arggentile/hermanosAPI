@@ -100,7 +100,7 @@ abstract class Tiket extends \yii\db\ActiveRecord
      */
     public function getFactura()
     {
-        return $this->hasOne(\app\models\Factura::className(), ['id' => 'id_factura']);
+        return $this->hasOne(\app\models\Factura::className(), ['id_tiket' => 'id']);
     }
 
     /**

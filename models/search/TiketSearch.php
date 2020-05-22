@@ -11,6 +11,10 @@ use app\models\Tiket;
  */
 class TiketSearch extends Tiket
 {
+    public $fecha_inicio_desde;
+    public $fecha_inicio_hasta;
+    public $informada;
+    
     /**
      * {@inheritdoc}
      */
@@ -20,6 +24,7 @@ class TiketSearch extends Tiket
             [['id', 'id_tipopago', 'id_cliente'], 'integer'],
             [['nro_tiket', 'fecha_tiket', 'fecha_pago', 'detalles'], 'safe'],
             [['importe'], 'number'],
+            [['fecha_inicio_desde','fecha_inicio_hasta','informada'], 'safe'],
         ];
     }
 
@@ -42,6 +47,7 @@ class TiketSearch extends Tiket
     public function search($params)
     {
         $query = Tiket::find();
+        $query->joinWith(['miFactura fac']);
 
         // add conditions that should always apply here
 
@@ -70,6 +76,15 @@ class TiketSearch extends Tiket
         $query->andFilterWhere(['like', 'nro_tiket', $this->nro_tiket])
             ->andFilterWhere(['like', 'detalles', $this->detalles]);
 
+        //filtro fechas
+        if(!empty($this->fecha_inicio_desde) && !empty($this->fecha_inicio_hasta)){
+           $query->andFilterWhere(['between', 'fecha_pago', date('Y-m-d', strtotime($this->fecha_inicio_desde)), date('Y-m-d 23:59:59', strtotime($this->fecha_inicio_hasta))]); 
+        }
+        if($this->informada=='1' || $this->informada==1){
+           $query->andFilterWhere(['fac.informada'=>'1']); 
+        }elseif($this->informada=='0' || $this->informada==0){
+           $query->andFilterWhere(['fac.informada'=>'0']); 
+        }
         return $dataProvider;
     }
 }

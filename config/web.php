@@ -82,7 +82,7 @@ $config = [
                 'class' => 'Swift_SmtpTransport',
                 'host' => 'mail.hermanosdedonbosco.com',
                 'username' => 'hermanos',
-                'password' => 'donbosco???159',
+                'password' => 'NoaH???159',
                 'port' => '587',
                 'encryption' => 'tls',
             ],
@@ -212,7 +212,7 @@ $config = [
     ],     */
 ];
 
-if (YII_ENV_DEV) {
+
     // configuration adjustments for 'dev' environment
     $config['bootstrap'][] = 'debug';
     $config['modules']['debug'] = [
@@ -227,6 +227,6 @@ if (YII_ENV_DEV) {
         // uncomment the following to add your IP if you are not connecting from localhost.
         'allowedIPs' => [ '*'],
     ];
-}
+
 
 return $config;

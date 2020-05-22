@@ -41,13 +41,13 @@ class ServicioDebitoAutomatico extends BaseServicioDebitoAutomatico
             $servicioAlumno = \app\models\ServicioAlumno::findOne($this->id_servicio);
 
             $alumno = \app\models\Alumno::findOne($servicioAlumno->id_alumno);
-            return $servicioAlumno->datosMiServicio . " ". $servicioAlumno->importeAbonar;
+            return $servicioAlumno->datosMiServicio;
        }else
         if($this->tiposervicio==DebitoAutomatico::ID_TIPOSERVICIO_CONVENIO_PAGO){
             $cuotaConvenioPago = \app\models\CuotaConvenioPago::findOne($this->id_servicio);
             $convenioPago = \app\models\ConvenioPago::findOne($cuotaConvenioPago->id_conveniopago); 
             $familia = \app\models\GrupoFamiliar::findOne($convenioPago->id_familia);
-            return "Convenio Pago Nº:".$convenioPago->id. " Nº cuota: ".$cuotaConvenioPago->id." -$".$cuotaConvenioPago->monto;
+            return "C.P N:".$convenioPago->id. " Nº cuota: ".$cuotaConvenioPago->id." -$".$cuotaConvenioPago->monto;
         }
     }
     
@@ -64,6 +64,18 @@ class ServicioDebitoAutomatico extends BaseServicioDebitoAutomatico
             return $familia->apellidos;
         }
     }
+    
+    public function getDetalleResultadoProcesamiento() {       
+        $result = '';
+        if(!empty($this->resultado_procesamiento)){
+            $modelResultadoCBU = \app\models\ResultadoCbuPatagonia::find()->andWhere(['like', 'codigo', $this->resultado_procesamiento])->one();
+            if(!empty($modelResultadoCBU))
+                $result = $modelResultadoCBU->descripcion;
+        }
+            return $result;
+    }
+    
+            
     
     public function getMiTiket(){
         

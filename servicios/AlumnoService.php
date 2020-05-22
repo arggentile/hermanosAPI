@@ -75,8 +75,7 @@ class AlumnoService extends \yii\base\Component
                 $transaction->rollBack();
                 $response['success'] = false;
                 $response['mensaje'] = 'Operación erronea';
-                $response['error_models'] =   $model->errors; 
-                \Yii::$app->getModule('audit')->data('errorAction', \yii\helpers\VarDumper::dumpAsString($model->errors)); 
+                $response['error_models'] =   $model->errors;                
                 return $response;
             }
         }catch (GralException $e) {
@@ -148,11 +147,9 @@ class AlumnoService extends \yii\base\Component
                     $response['nuevoModeloPersona'] = $nuevaPersona; 
                 }else{
                     $transaction->rollBack();
-                    $response['success'] = false;
-                    \Yii::$app->getModule('audit')->data('errorDataModel', json_encode($nuevaPersona->errors)); 
+                    $response['success'] = false;                    
                     $response['error_modelPersona'] =   $nuevaPersona->errors; 
-                    $response['error_modelAlumno'] =   $nuevoAlumno->errors; 
-                    \Yii::$app->getModule('audit')->data('errorDataModel', json_encode($nuevoAlumno->errors)); 
+                    $response['error_modelAlumno'] =   $nuevoAlumno->errors;                    
                 }
             }
             return $response;
@@ -182,11 +179,11 @@ class AlumnoService extends \yii\base\Component
                 $transaction->rollBack();
                 $response['success'] = false;
                 $response['mensaje'] = 'Carga incorrecta';
-                \Yii::$app->getModule('audit')->data('sd', json_encode($nuevaPersona->errors)); 
+                
                 $response['error_modelPersona'] =   $nuevaPersona->errors; 
                 $nuevoAlumno->validate();
                 $response['error_modelAlumno'] =   $nuevoAlumno->errors; 
-                \Yii::$app->getModule('audit')->data('sd', json_encode($nuevoAlumno->errors)); 
+                
             }else{                
                 if($nuevoAlumno->save()){
                     $transaction->commit();
@@ -196,11 +193,9 @@ class AlumnoService extends \yii\base\Component
                     $response['nuevoModeloPersona'] = $nuevaPersona; 
                 }else{
                     $transaction->rollBack();
-                    $response['success'] = false;
-                    \Yii::$app->getModule('audit')->data('sd', json_encode($nuevaPersona->errors)); 
+                    $response['success'] = false;                   
                     $response['error_modelPersona'] =   $nuevaPersona->errors; 
-                    $response['error_modelAlumno'] =   $nuevoAlumno->errors; 
-                    \Yii::$app->getModule('audit')->data('sd', json_encode($nuevoAlumno->errors)); 
+                    $response['error_modelAlumno'] =   $nuevoAlumno->errors;                     
                 }
             }
             return $response;

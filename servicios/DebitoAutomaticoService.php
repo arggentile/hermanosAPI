@@ -23,9 +23,7 @@ use app\helpers\GralException;
  *
  * @author agentile
  */
-class DebitoAutomaticoService {
-
-    
+class DebitoAutomaticoService {    
     
     public static function eliminarDebitoAutomatico($id){        
         try{
@@ -95,9 +93,9 @@ class DebitoAutomaticoService {
             throw new \yii\web\HttpException(500, $e->getMessage());
         }              
     }
-    
-    
-    
+        
+    /****************************************************************/
+    /****************************************************************/
     public function armarDebitoAutomatico($idDA) {
         try{
             $modelDebAut = DebitoAutomatico::findOne($idDA);
@@ -121,9 +119,8 @@ class DebitoAutomaticoService {
         }
     }    
 
-    /****************************************************************/
+    
     /************ DEBITOS TC BANCO PATAGONIA ************************/
-    /****************************************************************/
     public function generaArchivoPatagoniaTC($idDA){    
         ini_set('memory_limit', -1);
         set_time_limit(-1);        
@@ -364,9 +361,7 @@ class DebitoAutomaticoService {
         }   
     }  
     
-    /****************************************************************/
     /************ DEBITOS CBU BANCO PATAGONIA ***********************/
-    /****************************************************************/
     public function generaArchivoPatagoniaCBU($idDA){          
         ini_set('memory_limit', -1);      
         set_time_limit(-1);        
@@ -630,13 +625,14 @@ class DebitoAutomaticoService {
     
     /*************************************************************************/
     /*
-     * Procesa un archivo de entrada segun el tipo de archivo.
+     * Procesa un archivo de entrada según el tipo de archivo.
      * Basicamente; leee registro aregistro y segun la estructura del mismo,
-     * lee la info y según lainfo procesa los registros del debito
+     * lee la info y según la info procesa los registros del debito
      */
     public function procesarDebitoAutomatico($idDA) {
-        try{
-            \Yii::$app->getModule('audit')->data('errorAction', \yii\helpers\VarDumper::dumpAsString("ss!s"));  
+        ini_set('memory_limit', -1);      
+        set_time_limit(-1); 
+        try{        
             $modelDebAut = DebitoAutomatico::findOne($idDA);
             if(!$modelDebAut)
               throw new GralException('No se encontró el Debito Automatico para armar el debito.');                
@@ -649,142 +645,167 @@ class DebitoAutomaticoService {
                     return $this->procesarPatagoniaCBU($idDA);                 
                 }
             }    
-        }catch (GralException $e) {        
+        }catch (GralException $e) {
             \Yii::$app->getModule('audit')->data('errorAction', \yii\helpers\VarDumper::dumpAsString($e));  
-            throw new GralException($e->getMessage());            
-        }catch (Exception $e){           
+            throw new GralException($e->getMessage());     
+        }catch (Exception $e){             
             \Yii::$app->getModule('audit')->data('errorAction', \yii\helpers\VarDumper::dumpAsString($e));
             throw new \yii\web\HttpException(500, "Error interno al procesar la solicitud.");
         }
     }    
-       
+      
+    
+    
+    /********************** procesamiento del Archivo  CBU *********/
+    private function cantidadLineasArchivoCBU($archivo) {
+        try {
+            $file = fopen($archivo, "r");
+            $cantidadLineas = 0;                
+            while(!feof($file)){
+                $linea = fgets($file);
+                if(substr($linea, 0,1)=='D')
+                    $cantidadLineas+=1;
+            }  
+            fclose($file);
+            return $cantidadLineas;
+        }catch (GralException $e) {  
+            \Yii::$app->getModule('audit')->data('errorAction', \yii\helpers\VarDumper::dumpAsString($e));             
+            throw new GralException($e->getMessage()); 
+        }catch (\Exception $e) {
+            \Yii::$app->getModule('audit')->data('errorAction', \yii\helpers\VarDumper::dumpAsString($e));         
+            throw new \yii\web\HttpException(500, $e->getMessage()); 
+        }
+    }
+    
     private  function procesarPatagoniaCBU($id) {
+        ini_set('memory_limit', -1);      
+        set_time_limit(-1); 
         $transaction = Yii::$app->db->beginTransaction();
         try {
-            \Yii::$app->getModule('audit')->data('errorAction', \yii\helpers\VarDumper::dumpAsString("ss!s"));  
-            $model= DebitoAutomatico::findOne($id);
             
-            $filename = Yii::getAlias('@webroot') . "/archivos_generados/patagonia/cbu/devoluciones/debitos" . $model->id.".txt";
+            $filename = Yii::getAlias('@webroot') . "/archivos_generados/patagonia/cbu/devoluciones/debitos" . $id . ".txt";
             $valid = true;           
-            
-            $fechaDebito=$model->fecha_debito;
-            $fechaDebito =  \app\helpers\Fecha::formatear( $fechaDebito, 'Y-m-d', 'd-m-Y'); 
             if (!file_exists($filename)) {
                 $valid = false;
                 $transaction->rollBack();
                 return ['error'=>'1', 
                         'success'=>false, 
                         'resultado'=>'No se encontró el archivo para su procesamiento.'];
-            } else {                
-                $file = fopen($filename, "r");
+            } else {
+                $model= DebitoAutomatico::findOne($id);
+                $fechaDebito =  \app\helpers\Fecha::formatear( $model->fecha_debito, 'Y-m-d', 'd-m-Y'); 
+                $cantLineas = $this->cantidadLineasArchivoCBU($filename);
                 
+                if($cantLineas !== $model->registros_enviados){
+                    return ['error'=>'1', 
+                        'success'=>false, 
+                        'resultado'=>'La cantidad de registros procesados no coincide con los enviados.'];    
+                }
+                
+                $file = fopen($filename, "r");
                 $totalIngreso = 0;
                 $itemsCorrectos = 0; 
                 $itemsInCorrectos = 0; 
                 $cantRegistrosProcesados = 0;
-                $nrolinea = -1;
-                
+                $nrolinea = -1;                
+           
                 while(!feof($file)){  
                     $linea = fgets($file);
                     $nrolinea += 1;
-                    if ($nrolinea == 0)
+                    if (($nrolinea == 0))
                         continue;
 
                     $cantRegistrosProcesados+=1;
+                    $inicioRegistro = substr($linea, 0, 1);
+                    if($inicioRegistro=='D') {
+                        $idFamilia = (int) substr($linea, 37, 5);
+                        $nro_cbu = substr($linea, 12, 22);
+                        $resultado_proceso = substr($linea, 151, 3);                    
+                        $serviciomatricula= trim(substr($linea, 89, 15));        
+                        $fechaArchivo = substr($linea, 56, 8);      
+                        $fechaArchivo = \app\helpers\Fecha::formatear($fechaArchivo, 'dmY', 'Y-m-d');   
+                        //control de que sea el archivo correcto
                     
-                    $idFamilia = (int) substr($linea, 37, 5);
-                    $nro_cbu = substr($linea, 12, 22);
-                    $resultado_proceso = substr($linea, 151, 3);                    
-                    $serviciomatricula= trim(substr($linea, 89, 15));        
-                    $fechaArchivo = substr($linea, 56, 8);      
-                    $fechaArchivo = \app\helpers\Fecha::formatear($fechaArchivo, 'dmY', 'Y-m-d');   
-                   //control de que sea el archivo correcto
-                    /*
-                    if($fechaArchivo != $model->fecha_debito)
-                        throw new GralException('Fechas registros incompatibles');
-                    */
+                        if($fechaArchivo != $model->fecha_debito)
+                            throw new GralException('Fechas registros incompatibles');
                     
-                    $registroDebitoFamiliar = \app\models\DebitoAutomaticoRegistro::find()
-                            ->andWhere(['id_debitoautomatico'=>$id])
-                            ->andWhere(['id_familia'=>$idFamilia])
-                            ->one();
-                    //control de que sea el archivo correcto
-//                    if(!$registroDebitoFamiliar)
-//                        throw new GralException('Error, uno de los registros encontrados en el archivo no coincide con el que se envio');
-                   
-                    $textoResultado = $resultado_proceso;
-                    $modelResultadoCBU = \app\models\ResultadoCbuPatagonia::find()->andWhere(['like', 'codigo', $resultado_proceso])->one();
-                    if(!empty($modelResultadoCBU))
-                        $textoResultado.=" ".$modelResultadoCBU->descripcion;
+                    
+                        $registroDebitoFamiliar = \app\models\DebitoAutomaticoRegistro::find()
+                                ->andWhere(['id_debitoautomatico'=>$id])
+                                ->andWhere(['id_familia'=>$idFamilia])
+                                ->one();
+                            //control de que sea el archivo correcto
+        //                    if(!$registroDebitoFamiliar)
+        //                        throw new GralException('Error, uno de los registros encontrados en el archivo no coincide con el que se envio');
+
+                        $textoResultado = $resultado_proceso;
+                        $modelResultadoCBU = \app\models\ResultadoCbuPatagonia::find()->andWhere(['like', 'codigo', $resultado_proceso])->one();
+                        if(!empty($modelResultadoCBU))
+                            $textoResultado.=" ".$modelResultadoCBU->descripcion;
                             
-                    if(!empty($registroDebitoFamiliar)){
-                        $registroDebitoFamiliar->resultado = $textoResultado;
-                        if($resultado_proceso=='R00'){
-                            $registroDebitoFamiliar->correcto = '1';
-                        }
-                        if(!$registroDebitoFamiliar->save()){
-                            \Yii::$app->getModule('audit')->data('errorAction', json_encode($registroDebitoFamiliar->errors));
-                            throw new GralException('Error, al grabar el resultado de procesamiento');                   
-                        }
-                    }
-                        
-                    //buscamos todos lo servicios asociados al debito de la familia
-                    $serviciosEnDebAut = \app\models\ServicioDebitoAutomatico::find()
-                            ->andWhere(['id_debitoautomatico' => $id])
-                            ->andWhere(['id_familia' => $idFamilia]) 
-                            ->all();
-                    //reccoremos todos los servicios asociados a la linea familia del archivo
-                    if(!empty($serviciosEnDebAut)){
-                        foreach($serviciosEnDebAut as $modelServicioDebAut){     
-                            $textoResultado = $resultado_proceso;
-                            $modelResultadoCBU = \app\models\ResultadoCbuPatagonia::find()->andWhere(['like', 'codigo', $resultado_proceso])->one();
-                            if(!empty($modelResultadoCBU))
-                                $textoResultado.=" ".$modelResultadoCBU->descripcion;
-                            
-                            $modelServicioDebAut->resultado_procesamiento = $textoResultado;
-                            $modelServicioDebAut->correcto = '1';
-                            
-                            $idEstado = ($resultado_proceso=='R00')?\app\models\EstadoServicio::ID_ABONADA_EN_DEBITOAUTOMATICO:\app\models\EstadoServicio::ID_ABIERTA;
-                            if($modelServicioDebAut->tiposervicio== \app\models\DebitoAutomatico::ID_TIPOSERVICIO_SERVICIOS){
-                                $modelServicioAlumno = \app\models\ServicioAlumno::findOne($modelServicioDebAut->id_servicio);                              
-                                $modelServicioAlumno->id_estado = $idEstado;
-                                $modelServicioAlumno->importe_abonado += $modelServicioDebAut->importe;
-                                $valid = $valid && $modelServicioAlumno->save() && $modelServicioDebAut->save();
-                                $totalIngreso += $modelServicioDebAut->importe;
-                                $itemsCorrectos += 1;
-                            }else
-                            if($modelServicioDebAut->tiposervicio == \app\models\DebitoAutomatico::ID_TIPOSERVICIO_CONVENIO_PAGO){
-                                $modelCCP = \app\models\CuotaConvenioPago::findOne($modelServicioDebAut->id_servicio);                               
-                                $modelCCP->id_estado = $idEstado;
-                                $modelCCP->importe_abonado += $modelServicioDebAut->importe;
-                                $valid = $valid && $modelCCP->save() && $modelServicioDebAut->save();
-                                $totalIngreso += $modelServicioDebAut->importe;;
-                                $itemsCorrectos += 1;
+                        if(!empty($registroDebitoFamiliar)){
+                            $registroDebitoFamiliar->resultado = $textoResultado;
+                            if($resultado_proceso=='R00'){
+                                $itemsCorrectos+=1;
+                                $registroDebitoFamiliar->correcto = '1';
+                            }
+                            if(!$registroDebitoFamiliar->save()){
+                                \Yii::$app->getModule('audit')->data('errorAction', json_encode($registroDebitoFamiliar->errors));
+                                throw new GralException('Error, al grabar el resultado de procesamiento');                   
                             }
                         }
-                    }                    
-                }               
-                
+                        
+                        //buscamos todos lo servicios asociados al debito de la familia
+                        $serviciosEnDebAut = \app\models\ServicioDebitoAutomatico::find()
+                                ->andWhere(['id_debitoautomatico' => $id])
+                                ->andWhere(['id_familia' => $idFamilia]) 
+                                ->all();
+                        //reccoremos todos los servicios asociados a la linea familia del archivo
+                        if(!empty($serviciosEnDebAut)){
+                            foreach($serviciosEnDebAut as $modelServicioDebAut){     
+                                
+                                $modelServicioDebAut->resultado_procesamiento = $resultado_proceso;
+                                $modelServicioDebAut->correcto = '1';
+
+                                $idEstado = ($resultado_proceso=='R00')?\app\models\EstadoServicio::ID_ABONADA_EN_DEBITOAUTOMATICO:\app\models\EstadoServicio::ID_ABIERTA;
+                                if($modelServicioDebAut->tiposervicio== \app\models\DebitoAutomatico::ID_TIPOSERVICIO_SERVICIOS){
+                                    $modelServicioAlumno = \app\models\ServicioAlumno::findOne($modelServicioDebAut->id_servicio);                              
+                                    $modelServicioAlumno->id_estado = $idEstado;
+                                    $modelServicioAlumno->importe_abonado += $modelServicioDebAut->importe;
+                                    $valid = $valid && $modelServicioAlumno->save() && $modelServicioDebAut->save();
+                                    $totalIngreso += $modelServicioDebAut->importe;                                
+                                }else
+                                if($modelServicioDebAut->tiposervicio == \app\models\DebitoAutomatico::ID_TIPOSERVICIO_CONVENIO_PAGO){
+                                    $modelCCP = \app\models\CuotaConvenioPago::findOne($modelServicioDebAut->id_servicio);                               
+                                    $modelCCP->id_estado = $idEstado;
+                                    $modelCCP->importe_abonado += $modelServicioDebAut->importe;
+                                    $valid = $valid && $modelCCP->save() && $modelServicioDebAut->save();
+                                    $totalIngreso += $modelServicioDebAut->importe;                                
+                                }
+                            }
+                        }                    
+                    }    
+                }//while  
                 
                 $model->procesado='1';
                 $model->registros_correctos=$itemsCorrectos;
-                $model->saldo_entrante=$totalIngreso;
-                
-    //                if($cantRegistrosProcesados!=$model->registros_enviados)
-    //                    throw new GralException('Error, no coincide la cantidad de registros procesados con los enviados');    
-                
+                $model->saldo_entrante=$totalIngreso;                
+                fclose($file);
                 if($valid && $model->save()){
-                    $transaction->commit();
+                    //$transaction->commit();
                     //generamos los tiket 
                      $serviciosEnDebAut = \app\models\DebitoAutomaticoRegistro::find()
                             ->andWhere(['id_debitoautomatico' => $model->id])                            
                             ->all();
-                     \Yii::$app->getModule('audit')->data('armando tiket-cantidad de cuotas', \yii\helpers\VarDumper::dumpAsString(count($serviciosEnDebAut))); 
-                  
-                     foreach($serviciosEnDebAut as $registro){
-                        if($registro->correcto=='1' || $registro->correcto==1)
-                            $procTiket = $this->armarTiketProceso($model->id, $registro->id_familia, FormaPago::ID_DEBITO_CBU, $registro->monto , $fechaDebito);
-                    }
+                    if(!empty($serviciosEnDebAut))
+                        foreach($serviciosEnDebAut as $registro){
+                        $cccc = 0;
+                            if($registro->correcto=='1' || $registro->correcto==1)
+                                $cccc+=1;
+                                //$procTiket = $this->armarTiketProceso($model->id, $registro->id_familia, FormaPago::ID_DEBITO_CBU, $registro->monto , $fechaDebito);
+                        }
+                 var_dump("lll " .$cccc);
+                 exit;
                     
                     return ['error'=>'0', 'success'=>true, 'resultado'=>'EL ARCHIVO SE PROCESO CON EXITO'];                    
                 }else{
@@ -792,10 +813,14 @@ class DebitoAutomaticoService {
                     return ['error'=>'1', 'success'=>false, 'resultado'=>'NO SE PUDO PROCESAR EL ARCHIVO'];
                 }
             }
-        }catch (\Exception $e) {
+        }catch (GralException $e) { 
+             \Yii::$app->getModule('audit')->data('errorAction', \yii\helpers\VarDumper::dumpAsString($e));  
             (isset($transaction) && $transaction->isActive)?$transaction->rollBack():'';
-            throw new \yii\web\HttpException(500, $e->getMessage()); 
+            return ['error'=>'1', 
+                        'success'=>false, 
+                        'resultado'=> $e->getMessage()];
         }catch (\Exception $e) {
+             \Yii::$app->getModule('audit')->data('errorAction', \yii\helpers\VarDumper::dumpAsString($e));  
             (isset($transaction) && $transaction->isActive)?$transaction->rollBack():'';
             throw new \yii\web\HttpException(500, $e->getMessage()); 
         }
@@ -804,8 +829,15 @@ class DebitoAutomaticoService {
     
     /* armamos iun tiket para el total de lo debitado a cada registro **/
     private function armarTiketProceso($idDebito, $idFamilia, $idTipoPago, $monto, $fechaTiket){
+        ini_set('memory_limit', -1);      
+        set_time_limit(-1); 
         try{
             $modelFamilia = \app\models\GrupoFamiliar::findOne($idFamilia);
+            if(!$modelFamilia){
+                var_dump("No existe la familia");
+                exit;
+            }
+                
             $modelTiket = new \app\models\Tiket();
             $modelTiket->id_cliente = $idFamilia;
             $modelTiket->id_tipopago = $idTipoPago;
@@ -814,27 +846,29 @@ class DebitoAutomaticoService {
             $modelTiket->detalles = 'Pago Debito Automatico'; 
             if(!empty($modelFamilia) && !empty($modelFamilia->cuil_afip_pago))
                 $modelTiket->dni_cliente = $modelFamilia->cuil_afip_pago; 
-          
-            
             
             $serviciosDebito = ServicioDebitoAutomatico::find()->select('id_servicio')
                     ->andWhere(['id_debitoautomatico'=>$idDebito])
                     ->andWhere(['id_familia'=>$idFamilia])
                     ->andWhere(['tiposervicio'=>\app\models\DebitoAutomatico::ID_TIPOSERVICIO_SERVICIOS])
                     ->asArray()->all();
+            
             if(count($serviciosDebito)<=0)
-                $serviciosDebito = null;
+                $serviciosDebito = [];
+            else
+                $serviciosDebito = \yii\helpers\ArrayHelper::getColumn($serviciosDebito, 'id_servicio');           
+            
             $cuotasDebito = ServicioDebitoAutomatico::find()->select('id_servicio')
                     ->andWhere(['id_debitoautomatico'=>$idDebito])
                     ->andWhere(['id_familia'=>$idFamilia])
                     ->andWhere(['tiposervicio'=>\app\models\DebitoAutomatico::ID_TIPOSERVICIO_CONVENIO_PAGO])
                      ->asArray()->all();
-            $cuotasDebito = \yii\helpers\ArrayHelper::getColumn($cuotasDebito, 'id_servicio');
-            $serviciosDebito = \yii\helpers\ArrayHelper::getColumn($serviciosDebito, 'id_servicio');
-           
             
-            if($cuotasDebito<=0)
-                $cuotasDebito = null;
+            if(count($cuotasDebito)<=0)
+                $cuotasDebito1 = [];
+            else
+                $cuotasDebito1 = \yii\helpers\ArrayHelper::getColumn($cuotasDebito, 'id_servicio');
+            
            
             $response = Yii::$app->serviceCaja->generarTiket($modelTiket, $serviciosDebito, $cuotasDebito);
             if($response['success']){                      
@@ -843,9 +877,11 @@ class DebitoAutomaticoService {
                 return false;
             }
         }catch (\Exception $e) {
+             \Yii::$app->getModule('audit')->data('errorAction', \yii\helpers\VarDumper::dumpAsString($e));  
             (isset($transaction) && $transaction->isActive)?$transaction->rollBack():'';
             throw new \yii\web\HttpException(500, $e->getMessage()); 
         }catch (\Exception $e) {
+             \Yii::$app->getModule('audit')->data('errorAction', \yii\helpers\VarDumper::dumpAsString($e));  
             (isset($transaction) && $transaction->isActive)?$transaction->rollBack():'';
             throw new \yii\web\HttpException(500, $e->getMessage()); 
         }

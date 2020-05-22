@@ -29,7 +29,7 @@ class DescargaPadronExcelAction extends Action {
             ob_start();
             //$name = $_GET["id"];        
             $name = $archivo;
-            $carp_cont = Yii::getAlias('@webroot') . "/archivos_generados"; //carpeta a almacenar los archivos                                       
+            $carp_cont = Yii::getAlias('@archivos');
             $ruta_archivo = $carp_cont . "/" . $name;
 
             if (is_file($ruta_archivo)) {

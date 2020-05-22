@@ -117,12 +117,21 @@ class Tiket extends BaseTiket
         }    
     }
    
-      /**
+    /**
      * @return \yii\db\ActiveQuery
      */
     public function getGrupoFamiliar()
     {
         return $this->hasOne(\app\models\GrupoFamiliar::className(), ['id' => 'id_cliente']);
     }
+    
+    /**
+     * @return \yii\db\ActiveQuery
+     */
+    public function getMiFactura()
+    {
+        return $this->hasOne(\app\models\Factura::className(), ['id_tiket' => 'id']);
+    }
 
+    
 }

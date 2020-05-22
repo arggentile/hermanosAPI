@@ -32,7 +32,7 @@ class GrupoFamiliar extends BaseGrupoFamiliar
                ['folio','integer'],
                ['folio','unique','message'=>'El Nº de Folio esta asignada a otra familia'],                
                [['id_pago_asociado'] , 'rulesControlTipoPago'], 
-               ['responsable','safe']
+               ['responsable','safe'],
             ]
         );
     }
@@ -82,7 +82,7 @@ class GrupoFamiliar extends BaseGrupoFamiliar
                 $this->addError('cbu_cuenta', 'Nro de CBU Invalido.El mismo debe poseer un formato de 22 dígitos seguidos.');
             }
             $patronAfip = "/^[[:digit:]]{11}$/";
-            if (!preg_match($patronAfip, $this->cuil_afip_pago)) {                
+            if(empty($this->cuil_afip_pago) ||  (!preg_match($patronAfip, $this->cuil_afip_pago))) {                
                 $this->addError('cuil_afip_pago', 'Nro de CUIL Invalido.El mismo debe poseer un formato de 11 dígitos seguidos.');
             }
         }
@@ -93,7 +93,7 @@ class GrupoFamiliar extends BaseGrupoFamiliar
                 $this->addError('nro_tarjetacredito', 'Nro de TC INVALIDO. El mismo debe posser un formato de 16 dígitos; seguidos!!!');
             }
             $patronAfip = "/^[[:digit:]]{11}$/";
-            if (!preg_match($patronAfip, $this->cuil_afip_pago)) {                
+            if(empty($this->cuil_afip_pago) || (!preg_match($patronAfip, $this->cuil_afip_pago))) {                
                 $this->addError('cuil_afip_pago', 'Nro de CUIL Invalido.El mismo debe poseer un formato de 11 dígitos seguidos.');
             }
         }

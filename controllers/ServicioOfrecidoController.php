@@ -50,7 +50,7 @@ class ServicioOfrecidoController extends Controller
                         'roles' => ['devengarServicioOfrecido'],
                     ],
                     [      
-                        'actions' => ['action-editar-serivicio-alumno'],   
+                        'actions' => ['action-editar-serivicio-alumno','down-padron-excel'],   
                         'allow' => true,
                         //'roles' => ['editarServicioAlumno'],
                     ],
@@ -118,7 +118,7 @@ class ServicioOfrecidoController extends Controller
             $data = [];     
             $data['filtros']['tiposervicios'] = \yii\helpers\ArrayHelper::map(\app\models\CategoriaServicioOfrecido::find()->asArray()->all(), 'id', 'descripcion');
             $data['filtros']['sino'] = ['0'=>'No', '1'=>'Si'];
-        }catch (\Exception $e) {
+        }catch (\Exception $e) {           
            \Yii::$app->getModule('audit')->data('errorAction', \yii\helpers\VarDumper::dumpAsString($e));
            \Yii::$app->session->setFlash('error', Yii::$app->params['errorExcepcion']);
         }   
@@ -448,6 +448,7 @@ class ServicioOfrecidoController extends Controller
     
     public function exportarListado() {
         try{
+          
             $searchModel = new ServicioOfrecidoSearch();
             $dataProvider = $searchModel->search(Yii::$app->request->queryParams);
             $dataProvider->setPagination(false);
@@ -458,6 +459,7 @@ class ServicioOfrecidoController extends Controller
             $contador = count($data);
 
             if ($contador > 0) {
+             
                 $objPHPExcel = new Spreadsheet();  
                 
                 $objPHPExcel->setActiveSheetIndex(0);
@@ -492,7 +494,7 @@ class ServicioOfrecidoController extends Controller
                 
                 $letracolumnainicio = 'A';
                 $letrafilainicio = 3;
-
+     
                 while ($i < $contador) {
                     $letrafilainicio1 = (string) $letrafilainicio;
                     $columnaA = 'A' . $letrafilainicio1;
@@ -526,24 +528,24 @@ class ServicioOfrecidoController extends Controller
                     $i = $i + 1;
                     $letrafilainicio += 1;
                 }  
-     
-                $carp_cont = Yii::getAlias('@webroot') . "/archivos_generados"; //carpeta a almacenar los archivos
-                $nombre_archivo = "listadoServiciosOfrecidos" . Yii::$app->user->id . ".xlsx";                                
-                $ruta_archivo = $carp_cont . "/" . $nombre_archivo;
-            
-                $writer = new \PhpOffice\PhpSpreadsheet\Writer\Xlsx($objPHPExcel);
-                $writer->save($ruta_archivo);    
                 
-                $url_pdf = \yii\helpers\Url::to(['down-padron-excel', 'archivo' => $nombre_archivo]);               
-                return $this->redirect($url_pdf);              
+                $carp_cont = Yii::getAlias('@archivos'); 
+                $nombre_archivo = "listadoSO" . Yii::$app->user->id . ".xlsx";                                
+                $ruta_archivo = $carp_cont . "/" . $nombre_archivo;
+
+                $writer = new \PhpOffice\PhpSpreadsheet\Writer\Xlsx($objPHPExcel);                
+                $writer->save($ruta_archivo);    
+             
+                $url_pdf = \yii\helpers\Url::to(['down-padron-excel', 'archivo' => $nombre_archivo]);     
+                return $this->redirect($url_pdf);                 
             }else{
                 Yii::$app->session->setFlash('error', 'Listado Vacio');
             }
         
-        }catch (\Exception $e) {
+        }catch (\Exception $e) {            
             \Yii::$app->getModule('audit')->data('errorAction', \yii\helpers\VarDumper::dumpAsString($e));
             Yii::$app->session->setFlash('error', Yii::$app->params['errorExcepcion']);
-            return $this->redirect(['site/index']);            
+            return $this->redirect(['admin']);            
         }  
     }
 

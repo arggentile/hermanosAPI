@@ -8,25 +8,38 @@ use yii\widgets\ActiveForm;
 /* @var $form yii\widgets\ActiveForm */
 ?>
 
-<div class="grupo-familiar-search">
+<div class="alumnos-search">
     
     <?php $form = ActiveForm::begin([        
         'method' => 'get',
-        'id'=>'form-buscar-grupofamiliar',        
+        'id'=>'form-buscar-alumnos',        
     ]); ?>
 
     
     <div class="row">
-        <div class="col-sm-3">
-            <?= $form->field($model, 'apellidos') ?>
-        </div>
         <div class="col-sm-2">
-            <?= $form->field($model, 'folio') ?>    
+             <?= $form->field($model, 'nro_doc') ?>  
         </div>
-        <div class="col-sm-4">
-             <?= $form->field($model, 'responsable') ?>  
+        <div class="col-sm-3">
+            <?= $form->field($model, 'apellido') ?>
         </div>
-        <div class="col-sm-2 form-group">
+        <div class="col-sm-3">
+            <?= $form->field($model, 'nombre') ?>    
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-sm-2">
+             <?= $form->field($model, 'nro_doc') ?>  
+        </div>
+        <div class="col-sm-3">
+            <?= $form->field($model, 'apellido') ?>
+        </div>
+        <div class="col-sm-3">
+            <?= $form->field($model, 'nombre') ?>    
+        </div>
+    </div>    
+    
+    <div class="col-sm-2 form-group">
             <?= Html::submitButton('Buscar', ['class' => 'btn btn-search']) ?>
         </div>
     </div>

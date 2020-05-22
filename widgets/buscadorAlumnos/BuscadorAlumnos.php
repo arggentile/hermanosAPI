@@ -6,11 +6,11 @@
  * and open the template in the editor.
  */
 
-namespace app\widgets\buscadorfamilia;
+namespace app\widgets\buscadorAlumnos;
 
 use Yii;
 
-class BuscadorFamilia extends \yii\bootstrap\Widget
+class BuscadorAlumnos extends \yii\bootstrap\Widget
 {       
     public $searchModel;
     public $dataProvider;
@@ -24,7 +24,7 @@ class BuscadorFamilia extends \yii\bootstrap\Widget
             ]);
         }catch (\Exception $e) { 
             \Yii::$app->getModule('audit')->data('errorAction', \yii\helpers\VarDumper::dumpAsString($e));           
-            throw new GralException('Error al renderizar el forumlario para la seleccion de Familia.');                        
+            throw new GralException('Error al renderizar el widger de buscador de alumno.');                        
         }
     }
     

@@ -45,9 +45,10 @@ class CajaServices {
         throw new GralException('Forma de Pago no aceptada para el cobro por Caja');
     }
     
-    public static function generarTiket(Tiket $dataTiket, $idsServiciosAlumno = null, $idCuotasCP = null, $generarFactura=true){
-        $transactionTiket = Yii::$app->db->beginTransaction();
+    public static function generarTiket(Tiket $dataTiket, $idsServiciosAlumno = [], $idCuotasCP = [], $generarFactura=true){
+        
         try{
+            $transactionTiket = Yii::$app->db->beginTransaction();
             $modelTiket = new Tiket();          
             $modelTiket->setAttributes($dataTiket->attributes);
             $modelTiket->fecha_pago = $modelTiket->fecha_tiket;
@@ -63,14 +64,15 @@ class CajaServices {
             
             if($modelTiket->save() && 
                 self::acentarMovimientosCaja($modelTiket->id_cuentapagadora, \app\models\TipoMovimientoCuenta::IDtipo_moviento_ingreso, $modelTiket->importe, 'Ingresos', $modelTiket->fecha_pago,'',$modelTiket->id_tipopago, $modelTiket->id)){
+                
                 $generoTiket = true;
                 $valid = true;
                 
-                if(!empty($idsServiciosAlumno)){
+                if(is_array($idsServiciosAlumno) && !empty($idsServiciosAlumno) && count($idsServiciosAlumno)>0){
                     foreach($idsServiciosAlumno as $idModelAlumno){
                         $modelServicioAlumno = ServicioAlumno::findOne($idModelAlumno);
                         if(!$modelServicioAlumno)
-                            throw new GralException ('Error al asociar el servicio del alumno, al tiket');
+                            throw new GralException('Error al asociar el servicio del alumno, al tiket');
                         
                         $modelServicioTiket = new ServiciosTiket();
                         $modelServicioTiket->monto_abonado = $modelServicioAlumno->getImporteRestante();
@@ -83,7 +85,6 @@ class CajaServices {
                         if(!$modelServicioTiket->save()){
                             $valid = false;
                             \Yii::$app->getModule('audit')->data('errorModeloServcioTiket', \yii\helpers\VarDumper::dumpAsString($modelServicioAlumno->errors));  
-                        
                         }
                         if(!$modelServicioAlumno->save()){
                             $valid = false;
@@ -91,7 +92,8 @@ class CajaServices {
                         }
                     }
                 }
-                if(!empty($idCuotasCP)){
+                
+                if(is_array($idCuotasCP) && !empty($idCuotasCP) && count($idCuotasCP)>0){    
                     foreach($idCuotasCP as $idModelCuotaCP){
                         $modelCuotaCP = CuotaConvenioPago::findOne($idModelCuotaCP);
                         if(!$modelCuotaCP)
@@ -109,8 +111,7 @@ class CajaServices {
                         if(!$modelServicioTiket->save()){
                             $valid = false;
                             \Yii::$app->getModule('audit')->data('errorModeloServcioTiket', \yii\helpers\VarDumper::dumpAsString($modelServicioAlumno->errors));  
-                        }
-                        
+                        }                        
                         if(!$modelCuotaCP->save()){
                             $valid = false;
                             \Yii::$app->getModule('audit')->data('errorModelCuotaCP', \yii\helpers\VarDumper::dumpAsString($modelCuotaCP->errors));  
@@ -119,27 +120,28 @@ class CajaServices {
                 }
                 
                 if(!$valid){
+                    \Yii::$app->getModule('audit')->data('pepe', \yii\helpers\VarDumper::dumpAsString("asdasasdds"));  
                     $transactionTiket->rollBack();
                 }else{
                     $transactionTiket->commit();
-                    if($generarFactura) {
-                        $ptoVta = Yii::$app->params['ptoVtaAfip'];
-                        $resultFactura = \app\models\Factura::generaFactura($ptoVta, $modelTiket->importe, $modelTiket->fecha_tiket, $modelTiket->id);
-                        if($resultFactura['success']){
-                            $generoFactura = true;
-                            $idFactura = $resultFactura['modelFactura']->id;
-                            $resultAvisoFactura = \app\models\Factura::avisarAfip($idFactura, $ptoVta, "CUIL", $modelTiket->dni_cliente, $modelTiket->importe, $modelTiket->fecha_tiket, $modelTiket->id);
-                            if($resultAvisoFactura['success'])
-                                $avisoAfip = true;                        
-                        }                    
-                    }    
+//                    if($generarFactura) {
+//                        $ptoVta = Yii::$app->params['ptoVtaAfip'];
+//                        $resultFactura = \app\models\Factura::generaFactura($ptoVta, $modelTiket->importe, $modelTiket->fecha_tiket, $modelTiket->id);
+//                        if($resultFactura['success']){
+//                            $generoFactura = true;
+//                            $idFactura = $resultFactura['modelFactura']->id;
+//                            $resultAvisoFactura = \app\models\Factura::avisarAfip($idFactura, $ptoVta, "CUIL", $modelTiket->dni_cliente, $modelTiket->importe, $modelTiket->fecha_tiket, $modelTiket->id);
+//                            if($resultAvisoFactura['success']){
+//                                
+//                            }                           
+//                        }                    
+//                    }    
                 }
             }else{
                 \Yii::$app->getModule('audit')->data('errorModeloTiket', \yii\helpers\VarDumper::dumpAsString($modelTiket->errors));  
                 $transactionTiket->rollBack();
                 $errorsTiket = $modelTiket->errors; 
                 var_dump($modelTiket->errors);
-                exit;
             }
             
             $response['generoTiket'] = $generoFactura;
@@ -200,6 +202,7 @@ class CajaServices {
                 $transactionMovimiento->commit();
                 return $modelMovimientos->id;
             }else{        
+                $transactionMovimiento->rollBack();
                 $error = $modelMovimientos->getErrors();
                 \Yii::$app->getModule('audit')->data('errorMovimiento', \yii\helpers\VarDumper::dumpAsString($modelMovimientos->errors));  
                 \Yii::$app->getModule('audit')->data('error modelCuenta', \yii\helpers\VarDumper::dumpAsString($modelCuenta->errors));  

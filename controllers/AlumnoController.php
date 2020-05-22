@@ -48,7 +48,7 @@ class AlumnoController extends Controller
                         'roles' => ['cargarAlumno'],
                     ],
                     [     
-                        'actions' => ['pruebaFactura','pruebaCorreo'],
+                        'actions' => ['prueba-factura','prueba-correo'],
                         'allow' => true,
                         'roles' => ['cargarAlumno'],
                     ],
@@ -143,6 +143,23 @@ class AlumnoController extends Controller
     public function actionListado()
     {
         try{
+            
+               $conjutoActual = \Yii::$app->cache->get('ss');
+  \Yii::$app->getModule('audit')->data('cache1', \yii\helpers\VarDumper::dumpAsString($conjutoActual));       
+        if ($conjutoActual) {
+        
+            var_dump("dd");
+            var_dump($conjutoActual);
+            exit;
+        }
+        
+        $r = \Yii::$app->cache->set('ss', 'hhhh', 60 * 60);
+        var_dump("aa");
+   
+      \Yii::$app->getModule('audit')->data('cache2', \yii\helpers\VarDumper::dumpAsString($r)); 
+              $conjutoActual = \Yii::$app->cache->get('ss');
+  \Yii::$app->getModule('audit')->data('cache1', \yii\helpers\VarDumper::dumpAsString($conjutoActual));  
+
             $export = Yii::$app->request->get('export');
             if(isset($export) && $export==1)
                 return $this->exportarListado();
@@ -186,23 +203,34 @@ class AlumnoController extends Controller
             $response = Yii::$app->serviceAlumno->eliminarAlumno($id);
             if($response['success']){  
                 $transaction->commit();
-                Yii::$app->session->setFlash('success',Yii::$app->params['eliminacionCorrecta']);
-                return $this->redirect(['listado']);    
+                
+                if(Yii::$app->request->isAjax){
+                    Yii::$app->response->format = 'json';
+                    return ['error' => '0', 'mensaje' => 'Se elimino Correctamente!!!'];        
+                }else{
+                    Yii::$app->session->setFlash('success',Yii::$app->params['eliminacionCorrecta']);                
+                    return $this->redirect(['listado']);    
+                }
             }else{
                 $transaction->rollBack();
-                Yii::$app->session->setFlash('error', Yii::$app->params['eliminacionErronea']);
-                return $this->redirect(['view','id'=>$id]);
+                if(Yii::$app->request->isAjax){
+                    Yii::$app->response->format = 'json';
+                    return ['error' => '1', 'mensaje' => 'No se pudo realizar la elimininacion!!!'];        
+                }else{
+                    Yii::$app->session->setFlash('success',Yii::$app->params['eliminacionErronea']);                
+                     return $this->redirect(Yii::$app->request->referrer);
+                }
             }
         }catch (GralException $e) { 
             (isset($transaction) && $transaction->isActive)?$transaction->rollBack():'';
             \Yii::$app->getModule('audit')->data('errorAction', \yii\helpers\VarDumper::dumpAsString($e));  
             Yii::$app->session->setFlash('error', $e->getMessage());
-            return $this->redirect(['view', 'id'=>$id]);                        
+            return $this->redirect(Yii::$app->request->referrer);                        
         }catch (\Exception $e) { 
             (isset($transaction) && $transaction->isActive)?$transaction->rollBack():'';
             \Yii::$app->getModule('audit')->data('errorAction', \yii\helpers\VarDumper::dumpAsString($e));  
             Yii::$app->session->setFlash('error', Yii::$app->params['operacionFallida']);
-            return $this->redirect(['view', 'id'=>$id]);                        
+            return $this->redirect(Yii::$app->request->referrer);                        
         }
     }
      
@@ -806,16 +834,29 @@ class AlumnoController extends Controller
         ]);      
     }
     
-    public function pruebaFactura(){
+    public function actionPruebaFactura(){
 //      phpinfo();
 //      exit;
         try{
             $valid = true;
-            for($i =1; $i <100; $i++){
-                $dd = \app\models\Factura::avisarAfip(13, 1, "CUIL", "20327097351", 100, "2020-10-01");
-                var_dump($dd);
+            for($i =1; $i <10; $i++){
+                $modelTiket = new \app\models\Tiket();
+                $modelTiket->xfecha_tiket = '10-01-2020';
+                $modelTiket->fecha_pago = '10-01-2020';
+                
+                $modelTiket->dni_cliente = '20327097351';
+                $modelTiket->id_tipopago = 1;
+                $modelTiket->id_cliente = 1;
+                $modelTiket->importe = 50;
+                $modelTiket->detalles="d";
+                $modelTiket->id_cuentapagadora=1;
+                if($modelTiket->validate()){
+                    $response = Yii::$app->serviceCaja->generarTiket($modelTiket);
+                    var_dump($response);
+                }else
+                    var_dump($modelTiket->errors);
             }
-               \Yii::$app->getModule('audit')->data('1234', \yii\helpers\VarDumper::dumpAsString($dd));
+            exit;
         }catch (GralException $e){
             \Yii::$app->getModule('audit')->data('errorAction', \yii\helpers\VarDumper::dumpAsString($e));
             Yii::$app->session->setFlash('error',Yii::$app->params['operacionFallida']);             
@@ -826,6 +867,27 @@ class AlumnoController extends Controller
     }
     
    
+//    public function actionPruebaCorreo(){
+//        try{
+//           if (Yii::$app->mailer->compose('layouts/html', ['content' => 'Mensaje d eprueba'])
+//                                ->setFrom([ Yii::$app->params['noreplyEmail'] => Yii::$app->params['noreplyTitle']])
+//                                ->setTo('arg.gentile@gmail.com')                           
+//                                ->setSubject('Detalle Convenio Pago')
+//                                ->send()){
+//                            var_dump("siii");
+//                        }else{
+//                            var_dump("noo");                            
+//                        }
+//                        exit;
+//                        
+//        }catch (GralException $e){
+//            \Yii::$app->getModule('audit')->data('errorAction', \yii\helpers\VarDumper::dumpAsString($e));
+//            Yii::$app->session->setFlash('error',Yii::$app->params['operacionFallida']);             
+//        }catch (\Exception $e){
+//            \Yii::$app->getModule('audit')->data('errorAction', \yii\helpers\VarDumper::dumpAsString($e));
+//            Yii::$app->session->setFlash('error',Yii::$app->params['operacionFallida']);             
+//        }   
+//    }
     // 20073985529  Porrohugo1944   30630291727
     
  

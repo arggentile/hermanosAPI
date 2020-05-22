@@ -7,7 +7,7 @@ return [
     'serverEmail' => 'support@example.com',
     
     'noreplyEmail' => 'no-reply@hermanosdedonbosco.com',
-    'noreplyTitle' => 'Asociación Hermanos de Don Bosco',
+    'noreplyTitle' => 'Asociación ex-hermanos de Don Bosco',
     
     'user.passwordResetTokenExpire' => 3600,
     

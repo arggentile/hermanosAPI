@@ -22,13 +22,16 @@ class AppAsset extends AssetBundle
         'js/multiselect/css/multi-select.css',
         'plugins/jqueryloading/src/loading.css',
         'plugins/introjs/introjs.css',         
+        'datetimepicker-master/build/css/bootstrap-datetimepicker.css', 
     ];
     public $js = [
         'js/app.js',
         'js/multiselect/js/jquery.multi-select.js',        
         'plugins/jqueryloading/src/loading.js',
         'plugins/quicksearch/jquery.quicksearch.js',
-        'plugins/introjs/intro.js'       
+        'plugins/introjs/intro.js',
+        'datetimepicker-master/moment-with-locales.min.js',
+        'datetimepicker-master/build/js/bootstrap-datetimepicker.min.js',
     ];
     public $depends = [
         'yii\web\YiiAsset',

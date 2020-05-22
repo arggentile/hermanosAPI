@@ -159,8 +159,7 @@ class ConvenioPagoController extends Controller
                 return $this->exportarListado();
             
             $searchModel = new ConvenioPagoSearch();
-            $dataProvider = $searchModel->search(Yii::$app->request->queryParams);
-            
+            $dataProvider = $searchModel->search(Yii::$app->request->queryParams);            
         }catch(\Exception $e){
             \Yii::$app->getModule('audit')->data('errorAction', \yii\helpers\VarDumper::dumpAsString($e));            
             //Yii::$app->session->setFlash('error','ERROR SEVERO!!!');
@@ -169,8 +168,7 @@ class ConvenioPagoController extends Controller
         return $this->render('admin', [
             'searchModel' => $searchModel,
             'dataProvider' => $dataProvider,
-        ]); 
-        
+        ]);         
     }     
     
     /********************************************************************/
@@ -234,8 +232,8 @@ class ConvenioPagoController extends Controller
         try{            
             $modelGrupoFamiliar = new \app\models\GrupoFamiliar(); 
             
-            $query = \app\models\GrupoFamiliar::find(); 
-            $query->joinWith(['responsables r','responsables.persona p']);                    
+            $query = \app\models\GrupoFamiliar::find()->alias('f')->select('f.*')->distinct(); 
+            $query->joinWith(['responsables.persona p']);                    
             $dataProvider = new ActiveDataProvider([
                 'query' => $query,
             ]);

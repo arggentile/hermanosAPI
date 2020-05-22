@@ -14,6 +14,8 @@ use yii\web\NotFoundHttpException;
 use yii\data\ActiveDataProvider;
 use kartik\mpdf\Pdf;
 
+use PhpOffice\PhpSpreadsheet\Spreadsheet;
+
 use \app\helpers\GralException;
 
 /**
@@ -68,6 +70,8 @@ class CajaController extends \yii\web\Controller {
         return [
             'buscarFamilia' => 'app\actions\BuscarFamiliaAction',
             'buscarDeudaFamilia' => 'app\actions\BuscarDeudaFamiliaAction',
+            //accion comun para descargar archivos excel
+            'down-padron-excel'=>'app\actions\DescargaPadronExcelAction',            
         ];
     } 
     
@@ -182,7 +186,119 @@ class CajaController extends \yii\web\Controller {
         ]);     
     }
     
+    /************************************************************************/
+    /************************************************************************/
+    public function actionReporteTiketEmitidos(){
+        try{
+            $export = Yii::$app->request->get('export');
+            if(isset($export) && $export==1)
+                return $this->exportarReporteTiketsEmitidos();
+            
+            $searchModelTiket = new \app\models\search\TiketSearch();
+            $dataProviderTiketEmitidos = $searchModelTiket->search(Yii::$app->request->queryParams);  
+            
+            
+        }catch (GralException $e) {
+            \Yii::$app->getModule('audit')->data('errorAction', \yii\helpers\VarDumper::dumpAsString($e));
+            Yii::$app->session->setFlash('error', 'Atención!!! <br /> Se Produjo un error severo');
+            $this->redirect(['/site/index']);
+        } catch (\Exception $e) {
+            \Yii::$app->getModule('audit')->data('errorAction', \yii\helpers\VarDumper::dumpAsString($e));
+            Yii::$app->session->setFlash('error', 'Atención!!! <br /> Se Produjo un error severo');
+            $this->redirect(['/site/index']);
+        }
+        
+        return $this->render('tiketsEmitidos/tiketsEmitidos', [
+                'searchModelTiket'=>$searchModelTiket, 
+                'dataProviderTiketEmitidos'=>$dataProviderTiketEmitidos,               
+            ]);  
+        
+        
+    }
     
+    
+    public function exportarReporteTiketsEmitidos() { 
+        try{
+            $searchModelTiket = new \app\models\search\TiketSearch();
+            $dataProviderTiketEmitidos = $searchModelTiket->search(Yii::$app->request->queryParams);  
+            $dataProviderTiketEmitidos->setPagination(false); 
+           
+            $data = $dataProviderTiketEmitidos->getModels();          
+            
+            $i = 0;                        
+            $contador = count($data);
+           
+            $objPHPExcel = new \PhpOffice\PhpSpreadsheet\Spreadsheet(); 
+            $objPHPExcel->setActiveSheetIndex(0);
+            $objPHPExcel->getActiveSheet()->getColumnDimension('A')->setAutoSize(true);
+            $objPHPExcel->getActiveSheet()->getColumnDimension('B')->setAutoSize(true);
+            $objPHPExcel->getActiveSheet()->getColumnDimension('C')->setAutoSize(true);
+            $objPHPExcel->getActiveSheet()->getColumnDimension('D')->setAutoSize(true);
+            $objPHPExcel->getActiveSheet()->getColumnDimension('E')->setAutoSize(true);
+            $objPHPExcel->getActiveSheet()->getColumnDimension('F')->setAutoSize(true);
+
+
+            $this->cellColor($objPHPExcel, 'A1', 'F28A8C');
+            $this->cellColor($objPHPExcel, 'B1', 'F28A8C');
+            $this->cellColor($objPHPExcel, 'C1', 'F28A8C');
+            $this->cellColor($objPHPExcel, 'D1', 'F28A8C');
+            $this->cellColor($objPHPExcel, 'E1', 'F28A8C');
+            $this->cellColor($objPHPExcel, 'F1', 'F28A8C');
+               
+                
+            $objPHPExcel->getActiveSheet()->setCellValue('A1', 'Nro Tiket');
+            $objPHPExcel->getActiveSheet()->setCellValue('B1', 'Fecha');
+            $objPHPExcel->getActiveSheet()->setCellValue('C1', 'Medio Pago');
+            $objPHPExcel->getActiveSheet()->setCellValue('D1', 'Importe');
+            $objPHPExcel->getActiveSheet()->setCellValue('E1', 'Nro Factura');
+            $objPHPExcel->getActiveSheet()->setCellValue('F1', 'CAE');
+
+            $letracolumnainicio = 'A';
+            $letrafilainicio = 3;
+            if(!empty($data))
+             foreach($data as $modelTiket){
+                /* @var Tiket $modelTiket */
+            
+                $letrafilainicio1 = (string) $letrafilainicio;
+                $columnaA = 'A' . $letrafilainicio1;
+                $columnaB = 'B' . $letrafilainicio1;
+                $columnaC = 'C' . $letrafilainicio1;
+                $columnaD = 'D' . $letrafilainicio1;
+                $columnaE = 'E' . $letrafilainicio1;  
+                $columnaF = 'F' . $letrafilainicio1;  
+
+                $objPHPExcel->getActiveSheet()->setCellValue($columnaA, $modelTiket->id);
+                $objPHPExcel->getActiveSheet()->setCellValue($columnaB, $modelTiket->xfecha_tiket);
+                $objPHPExcel->getActiveSheet()->setCellValue($columnaC, $modelTiket->tipopago->nombre);
+                $objPHPExcel->getActiveSheet()->setCellValue($columnaD, $modelTiket->importe);
+                if($modelTiket->miFactura && ($modelTiket->miFactura->informada || !empty($modelTiket->miFactura->cae))){
+                    $objPHPExcel->getActiveSheet()->setCellValue($columnaE, "SI: ". $modelTiket->miFactura->fecha_informada);
+                    $objPHPExcel->getActiveSheet()->setCellValue($columnaF, $modelTiket->miFactura->cae);     
+                }else{
+                    $objPHPExcel->getActiveSheet()->setCellValue($columnaE, "No se informo a la AFIP. Error");
+                    $objPHPExcel->getActiveSheet()->setCellValue($columnaF, "No se informo a la AFIP. Error");   
+                } 
+                
+                
+                $i = $i + 1;
+                $letrafilainicio += 1;
+            }  
+
+            $carp_cont = Yii::getAlias('@webroot') . "/archivos_generados"; //carpeta a almacenar los archivos
+            $nombre_archivo = "listadoBonificacionesAlumnos" . Yii::$app->user->id . ".xlsx";                                
+            $ruta_archivo = $carp_cont . "/" . $nombre_archivo;
+
+            $writer = new \PhpOffice\PhpSpreadsheet\Writer\Xlsx($objPHPExcel);
+            $writer->save($ruta_archivo); 
+            $url_pdf = \yii\helpers\Url::to(['down-padron-excel', 'archivo' => $nombre_archivo]);               
+            return $this->redirect($url_pdf); 
+        }catch (\Exception $e) {
+            Yii::error('exportar Alumnos '.$e);
+            Yii::$app->session->setFlash('error', Yii::$app->params['errorExcepcion']);
+            return $this->redirect(['/site/index']);            
+        }  
+    }
+    /***********************************************************/
     
     
     public function actionDetalleTiket($id){
@@ -335,6 +451,14 @@ class CajaController extends \yii\web\Controller {
             readfile($archivo);
             unlink($archivo);
         }
-    } // FIN DescargaPdfConvenio     
+    } // FIN DescargaPdfConvenio  
+    
+    
+    
+    /****************************************/
+    public function cellColor($objPHPExcel,$cells,$color)
+    {
+        $objPHPExcel->getActiveSheet()->getStyle($cells)->getFill()->applyFromArray(array('type' => \PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID,'startcolor' => array('rgb' => $color) ));
+    }  
     
 }

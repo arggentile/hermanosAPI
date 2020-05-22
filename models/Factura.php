@@ -106,7 +106,10 @@ class Factura extends BaseFactura
                 
             if ($facturaAfip->conerror === FALSE) {
                 $facturaAfip->generaFactura();
-                 
+                
+                if($facturaAfip->conerror || !empty($facturaAfip->errores)){
+                    $valid = false;
+                }else 
                 if ($facturaAfip->nroCae > 0) {
                   
 //                    $fechaVencimientoCae = $facturaAfip->fechaVtoCae;
@@ -115,7 +118,7 @@ class Factura extends BaseFactura
 
                     $modelFactura->cae = $facturaAfip->nroCae;
                     $modelFactura->nroFactura = (string) $facturaAfip->nroFactura;
-
+                    $modelFactura->informada='1';
                     if ($modelFactura->save()) {                    
                        $valid = true;
                        $transactionFactura->commit();
@@ -129,6 +132,7 @@ class Factura extends BaseFactura
                 $response['mensaje'] = 'Carga correcta';   
                 $response['modelsFactura'] = $modelFactura;
             }else{
+                    (isset($transactionFactura) && $transactionFactura->isActive)?$transactionFactura->rollBack():'';
                     $transactionLogs = Yii::$app->db->beginTransaction();
                     $logs = new LogFactura();
                     $logs->fecha_prueba = $hoyDateTime;
