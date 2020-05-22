@@ -11,8 +11,8 @@ DebitoAutomaticoAssets::register($this);
 /* @var $this yii\web\View */
 /* @var $model app\models\DebitoAutomatico */
 
-$this->title = $model->id;
-$this->params['breadcrumbs'][] = ['label' => 'Debito Automaticos', 'url' => ['index']];
+$this->title = 'Gestion Debito Automatico';
+$this->params['breadcrumbs'][] = ['label' => 'Debito Automatico', 'url' => ['index']];
 $this->params['breadcrumbs'][] = $this->title;
 ?>
 
@@ -78,13 +78,19 @@ yii\bootstrap\Modal::end();
                                 'fecha_creacion:date',
                                 'fecha_debito:date',
                                 [
-                                    'label' => 'Reg. Enviados',
+                                    'label' => 'Reg. Enviados/Familia',
                                     'value' => $model->registros_enviados,
+                                    'contentOptions' => [
+                                        'class' => 'view-registrosenviados',
+                                    ]
                                     
                                 ],
                                 [
                                     'label' => 'Reg. Correctos',
                                     'value' => $model->registros_correctos,
+                                    'contentOptions' => [
+                                        'class' => 'view-registroscorrectos',
+                                    ]
                                 ],                                   
                                 [
                                     'label' => 'Procesado',  
@@ -139,29 +145,25 @@ yii\bootstrap\Modal::end();
                     'filterModel' => $searchItemsDebitos,
                     'columns' => [
                         ['class' => 'yii\grid\SerialColumn'],
+//                        [
+//                            'label' => 'Servicio',
+//                            'attribute'=>'tiposervicio',
+//                            'filter' => Html::activeDropDownList($searchItemsDebitos, 'tiposervicio', [ app\models\DebitoAutomatico::ID_TIPOSERVICIO_CONVENIO_PAGO=>'Convenio Pago', app\models\DebitoAutomatico::ID_TIPOSERVICIO_SERVICIOS=>'Servicios'] ,['class'=>'form-control','prompt' => '']),
+//                            'value' => function($model) {
+//                                if($model->tiposervicio== app\models\DebitoAutomatico::ID_TIPOSERVICIO_SERVICIOS)
+//                                    return "SERIVICIO";
+//                                else
+//                                    return "CUOTA CP";
+//                            },
+//                        ], 
                         [
                             'label' => 'Servicio',
                             'attribute'=>'tiposervicio',
                             'filter' => Html::activeDropDownList($searchItemsDebitos, 'tiposervicio', [ app\models\DebitoAutomatico::ID_TIPOSERVICIO_CONVENIO_PAGO=>'Convenio Pago', app\models\DebitoAutomatico::ID_TIPOSERVICIO_SERVICIOS=>'Servicios'] ,['class'=>'form-control','prompt' => '']),
                             'value' => function($model) {
-                                if($model->tiposervicio== app\models\DebitoAutomatico::ID_TIPOSERVICIO_SERVICIOS)
-                                    return "SERIVICIO";
-                                else
-                                    return "CUOTA CP";
-                            },
-                        ], 
-                        [
-                            'label' => 'Servicio',
-                            'attribute'=>'id_servicio',
-                            'filter' => Html::activeDropDownList($searchItemsDebitos, 'id_servicio', [ app\models\DebitoAutomatico::ID_TIPOSERVICIO_CONVENIO_PAGO=>'Convenio Pago', app\models\DebitoAutomatico::ID_TIPOSERVICIO_SERVICIOS=>'Servicios'] ,['class'=>'form-control','prompt' => '']),
-                            'value' => function($model) {
-                                if($model->tiposervicio== app\models\DebitoAutomatico::ID_TIPOSERVICIO_SERVICIOS)
-                                    return $model->detalleMiServicio;
-                                else{
-                                    $modelCuta =  \app\models\CuotaConvenioPago::findOne($model->id_servicio);
-                                    return "Nº CUOTA:" . $modelCuta->nro_cuota;
                                 
-                                }
+                                    return $model->detalleMiServicio;
+                               
                                 
                             },
                         ], 
@@ -185,22 +187,41 @@ yii\bootstrap\Modal::end();
                             'value' => function($model) {
                                 return $model->detalleAlumno;
                             },
-                        ], 
-                        'resultado_procesamiento',  
-                        'id_servicio',  
+                        ],
                         [
-                            'label' => 'Tiket',  
-                            'format'=>'raw',
-                            'value' => function($model){
-                                if(!empty($model->getMiTiket()))
-                                return 
-                                dmstr\helpers\Html::button('<i class="glyphicon glyphicon-print"> </i>', ['class' => 'btn btn-warning btn-pdf-tiket',
-                                'onclick'=>'js:{downFactura("'. yii\helpers\Url::to(['/caja/pdf-tiket','idTiket'=>$model->getMiTiket()->id]) .'");}']);
-                       
-                                else
-                                   return "<span class='bg bg-blue'> S/N </span>"; 
-                            }
-                        ],                   
+                            'label' => 'Resultado',
+                            'value' => function($model) {
+                                return $model->detalleResultadoProcesamiento;
+                            },
+                        ],             
+                        'resultado_procesamiento',
+                        [
+                            'class' => 'yii\grid\ActionColumn',
+                            'headerOptions' => [
+                                'width' => '50',
+                                'class'=>'actionsgrid'
+                            ],
+                            'template'=>'{viewtiket} {pdftiket}',
+//                            'visibleButtons' => [                                   
+//                                        'update' => Yii::$app->user->can('cargarAlumno'),
+//                                        'view' =>Yii::$app->user->can('visualizarAlumno'),
+//                                    ],
+                            'buttons' => 
+                            [
+                                    'viewtiket' => function ($url, $model) {   
+                                    if(!empty($model->getMiTiket()))
+                                            return Html::a('<i class="fa fa-eye"> </i>', Url::to(['/caja/detalle-tiket', 'id'=>$model->getMiTiket()->id]) ,
+                                                    []);
+                                    }, 
+                                    'pdftiket' => function ($url, $model) {
+                                        if(!empty($model->getMiTiket()))
+                                            return Html::a('<i class="glyphicon glyphicon-print"> </i>','javascript:void(0)' ,
+                                                    ['class' => 'btn-pdf-tiket',
+                                                    'onclick'=>'js:{downFactura("'.  Url::to(['/caja/pdf-tiket', 'idTiket'=>$model->getMiTiket()->id]) .'");}']);
+                                    }, 
+                            ],             
+                        ],            
+                            
                     ],
                 ]); ?>
         <?php \yii\widgets\Pjax::end(); ?>
@@ -224,6 +245,14 @@ function ayuda(){
                 intro: 'Detalle / Información del debito.'
             }, 
             {
+                element: document.querySelector('.view-registrosenviados'),
+                intro: 'Indica la cantidad de Registros/Familias enviadas a debitar.'
+            },
+            {
+                element: document.querySelector('.view-registroscorrectos'),
+                intro: 'Indica la cantidad de Registros/Familias procesados correctamente.'
+            },
+            {
                 element: document.querySelector('#btn-down-archivo'),
                 intro: 'Descargar archivo a enviar al banco.'
             },
@@ -234,7 +263,8 @@ function ayuda(){
             {
                 element: document.querySelector('#btn-procesa'),
                 intro: 'Presione para procesar la devolución del banco.'
-            }
+            },
+            
         ]
       });
       intro.start();

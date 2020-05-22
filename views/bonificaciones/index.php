@@ -20,7 +20,7 @@ $this->params['breadcrumbs'][] = $this->title;
 
     <div class="box box-default">
         <div class="box-header with-border">
-            <i class="glyphicon glyphicon-wrench"></i> <h3 class="box-title"> Bonificaciones Automaticas </h3> 
+            <i class="glyphicon glyphicon-wrench"></i> <h3 class="box-title"> Bonificaciones </h3> 
         </div>
         <div class="box-body">
             <p class="pull-right">
@@ -68,7 +68,7 @@ $this->params['breadcrumbs'][] = $this->title;
                                'update' => function ($url, $model) {                                
                                                 return Html::a( '<i class="glyphicon glyphicon-pencil"></i>',
                                                                        ['create', 'id'=>$model['id']],
-                                                                       ['class'=>'btn btn-xs btn-warning editAjax',
+                                                                       ['class'=>'btn btn-xs btn-primary editAjax',
                                                                         'onclick'=>'js:{editAjax("'.Url::to(['create', 'id'=>$model['id']]) .'"); return false;}']
                                                                );
                                        },

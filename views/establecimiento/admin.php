@@ -75,7 +75,7 @@ function ayuda(){
                 intro: "Gestion establecimiento."
             },
             {
-                element: document.querySelector('.btn-alta'),
+                element: document.querySelector('.btn-alta-listado'),
                 intro: "Si desea realizar una nueva alta, presione sobre este botón."
             },
         ]

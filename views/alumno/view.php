@@ -81,7 +81,7 @@ $this->params['breadcrumbs'][] = $this->title;
                     </div>
                   
                     <div class="col-sm-12">
-                    <div class="box box-default">
+                    <div class="box box-default box-bonificacion-alumno">
                         <div class="box-header with-border">
                             <i class="fa fa-user-plus"></i> <h3 class="box-title"> Bonificaciones </h3> 
                             <span class="pull-right">
@@ -142,7 +142,7 @@ $this->params['breadcrumbs'][] = $this->title;
                         </div>
                     </div> <!-- box-bonificacione -->
                     
-                    <div class="box box-default">
+                    <div class="box box-default box-serviciosalumno">
                         <div class="box-header with-border">
                             <i class="fa fa-user-plus"></i> <h3 class="box-title"> Servicios Otorgados </h3> 
                         </div>
@@ -180,15 +180,24 @@ function ayuda(){
             {
                 element: document.querySelector('#tabledataalumno'),
                 intro: 'Información.'
-            }, 
+            },
+            
+            
             {
                 element: document.querySelector('#bot-gestionalumno'),
                 intro: 'Gestionar gestionar alumno.'
             },          
-            
+            {
+                element: document.querySelector('.box-bonificacion-alumno'),
+                intro: 'Bonificaciones asignadas al alumno.'
+            },
             {
                 element: document.querySelector('#btn-asignar-bonificacion'),
                 intro: 'Asignar bonificación.'
+            },
+            {
+                element: document.querySelector('.box-serviciosalumno'),
+                intro: 'Servicios asignados y tomados por el alumno.'
             },
             
         ]

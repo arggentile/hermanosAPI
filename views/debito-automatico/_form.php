@@ -53,9 +53,17 @@ use kartik\date\DatePicker;
     
     <div class="row" id='periodo'>
         <div class="col-sm-3">
+            <?php 
+            $label = 'Inicio Periodo ';
+            $label.= Html::tag('helpFecha', $content = '<i class="glyphicon glyphicon-question-sign"></i>', [
+                   // html-tags won't be rendered in title
+                   'title'=>"Especifique el periodo donde se barrera los servicios a adheriri al debito automatico.",
+                   'data-placement' => 'left' ,
+                   'data-toggle'=>'tooltip',
+                   'style' => 'white-space:pre;'
+            ] );            
+            ?>
             <?=
-            
-            
             $form->field($model, 'xinicio_periodo')->widget(
                     DatePicker::className(),([
                                         'language'=>'es',
@@ -64,7 +72,7 @@ use kartik\date\DatePicker;
                                             'autoclose'=>true,
                                             'format' => 'dd-mm-yyyy'
                                         ]
-                                    ]));?>
+                                    ]))->label($label);?>
         </div>
         <div class="col-sm-3">
             <?= $form->field($model, 'xfin_periodo')->widget(
@@ -107,4 +115,44 @@ $(document).ready(function(){
     
 });         
 ", \yii\web\View::POS_READY,'preventSubmitForm');
+?>
+<?php
+$this->registerJs("      
+function ayuda(){         
+    var intro = introJs();
+      intro.setOptions({
+        nextLabel: 'Siguiente',
+        prevLabel: 'Anterior',
+        skipLabel:'Terminar',
+        doneLabel:'Cerrar',
+        steps: [      
+            { 
+                intro: 'Formulario Alta de DebitoAutomatico.'
+            },  
+            {
+                element: document.querySelector('#debitoautomatico-nombre'),
+                intro: 'Ingrese un nombre para distinguir al debito.'
+            }, 
+            {
+                element: document.querySelector('#debitoautomatico-tipo_archivo'),
+                intro: 'Seleccione el tipo de archivo a armar el debito automtico.'
+            },
+            {
+                element: document.querySelector('#debitoautomatico-xfecha_debito'),
+                intro: 'Indique la fecha del debito, la misma indica la fecha donde se realizara el barrido o debito',
+            },
+            {
+                element: document.querySelector('#periodo'),
+                intro: 'Especifique el periodo de barrido de los servicios que se adjuntaran al archivo',
+            },          
+            
+            
+            
+            
+        ]
+      });
+      intro.start();
+}
+  
+", \yii\web\View::POS_END,'ayuda');
 ?>

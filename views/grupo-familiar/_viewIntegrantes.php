@@ -54,12 +54,16 @@ GrupoFamiliarAsset::register($this);
                             else
                                     echo "<li>". $alumno->miPersona->apellido ."; ".$alumno->miPersona->nombre;
                             
+                            echo '<div class="tools tools-alumnos">';
                             if(Yii::$app->user->can('cargarAlumno')){
-                                echo '
-                                    <div class="tools tools-alumnos">'.
-                                            Html::a('<i class="fa fa-edit"></i>', ['/alumno/empadronamiento', 'id' => $alumno->id], []).
-                                        '
-                                    </div>';
+                                echo Html::a('<i class="fa fa-edit"></i>', ['/alumno/empadronamiento', 'id' => $alumno->id], []);
+                            }
+                            echo " ";
+                            if(Yii::$app->user->can('eliminarAlumno')){
+                                echo Html::a('<i class="fa fa-trash-o"></i>', 'javascript:void(0)', [
+                                            'data-url' =>  Url::to(['/alumno/delete', 'id' => $alumno->id]),
+                                            'class' => 'btn-delete-alumno'
+                                        ]);
                             }
                             echo "</li>";
                         }

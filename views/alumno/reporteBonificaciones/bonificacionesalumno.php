@@ -135,14 +135,10 @@ $this->registerJs("
             steps: [
                 {
                     element: document.querySelector('.box-header'),
-                    intro: "Administración de Servicios Ofrecidos. "
+                    intro: "Reporte de Alumnos cargados en el sistema a los cuales se les asignarion bonificaciones",
                 },
                 {
-                    element: document.querySelector('#grid-serviciosofrecidos'),
-                    intro: "Listado de servicios cargados en el sistema."
-                },
-                {
-                    element: document.querySelector('.grid-view .filters'),
+                    element: document.querySelector('.alumnosbonificaciones-search'),
                     intro: "Filtros para realizar busquedas especificas, puede especificar más de un dato."
                 },
                 {
@@ -150,8 +146,8 @@ $this->registerJs("
                     intro: "El resultado de la busqueda sera desplegado en esta sección."
                 },
                 {
-                    element: document.querySelector('.btn-alta'),
-                    intro: "Si desea realizar una nueva alta, presione sobre este aqui."
+                    element: document.querySelector('.btn-export'),
+                    intro: "Si deseamos exportar el resultado del listado, presionamos cobre el boton."
                 },
             ]
         });

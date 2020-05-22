@@ -43,6 +43,21 @@ $this->params['breadcrumbs'][] = $this->title;
                     }
                   },
             'columns' => [ 
+                [
+                    'format'=>'raw',
+                    'label' => '-',
+                    //'filter'=> dmstr\helpers\Html::activeInput('text', $modelPersona,'nro_documento',['class'=>'form-control']),
+                    'value' => function($model) {
+                        $return = "";
+                        if($model->egresado)
+                            $return.="<span class='badge bg-red' title='Alumno Egresado'>E</span> ";
+                        if($model->activo)
+                            $return.="<span class='badge bg-primary' title='Alumno Activo'>Ac</span>";
+                        elseif($model->activo==false)
+                            $return.="<span class='badge bg-primary' title='Alumno Inactivo'>In</span>";
+                        return $return;
+                    },
+                ],
                 'nro_legajo',
                 [
                     'label' => 'Documento',

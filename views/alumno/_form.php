@@ -102,9 +102,19 @@ yii\bootstrap\Modal::end();
     </div>
     
     
-    
+    <div class="row">
+        <div class="col-sm-12">
+                <?php
+            if(!$model->isNewRecord){ ?>
+                <p> 
+                    Recuerde que si desea migrar al alumno de Division 
+                    Escolar/Establecimiento debe ir a la acción de 
+                    <a href="<?= Url::to(['/alumno/egresar-alumnos']);?>" title="Migrar/egresar"> Migracion/Egreso </a> 
+                </p>
+            <?php } ?>    
+        </div>
+    </div>
     <div class="row"  id="establecimientodivision">
-        
         
         <div class="col-sm-3">
             <?= $form->field($model, 'establecimiento')->dropDownList($data['filtros']['dropEstablecimientosSearch'] ,
@@ -137,8 +147,8 @@ yii\bootstrap\Modal::end();
         </div>
     </div>
     <?php
-    if(!$model->isNewRecord){ ?>
-    <div class="row">
+    if(!$model->isNewRecord && Yii::$app->user->can('migrarAlumnoEnEdicion')){ ?>
+    <div class="row"> 
         <div class="col-sm-3">
             <?= $form->field($model, 'egresado')->dropDownList([0=>'No',1=>'Si'],['prompt'=>'Seleccione','options'=>[$model->egresado=>['Selected'=>true]]]) ?>
         </div>

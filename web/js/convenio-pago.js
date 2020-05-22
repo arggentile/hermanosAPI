@@ -1,3 +1,17 @@
+$(document).ready(function () {
+    //bloquemos la pantalla cuando se realiza apetion ajaz del gri de alumnos
+    $(document).on('pjax:send', '#pjax-alumnos', function() {
+        
+        $('body').loading({message: 'Aguarde procesando...'});
+    });       
+    $(document).on('pjax:end', '#pjax-alumnos', function() {    
+        $('body').loading('stop');         
+        $('#form-search-alumnos .btn-search').button('reset');
+    });     
+});
+
+
+
 $(document).on('pjax:error', '#pjax-servicios-convenio', function() {
     reportarNotificacionGral('Se produjo un error al actualizar la lista de servicios a adherir al convenio','error',true);
 }); 

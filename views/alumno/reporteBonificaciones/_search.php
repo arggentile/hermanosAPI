@@ -9,7 +9,7 @@ use yii\helpers\Url;
 /* @var $form yii\widgets\ActiveForm */
 ?>
 
-<div class="grupo-familiar-search">
+<div class="alumnosbonificaciones-search">
 
     <?php $form = ActiveForm::begin([        
         'method' => 'get',

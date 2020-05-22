@@ -101,7 +101,8 @@ $this->params['breadcrumbs'][] = $this->title;
 
                     ],                
                     ['class' => 'yii\grid\ActionColumn',
-                     'template'=>'{view}',   
+                     'template'=>'{view}',  
+                    'headerOptions' => ['class'=>'actionsgrid'],    
                     ],
                 ],
             ]); ?>
@@ -148,23 +149,36 @@ function ayuda(){
         prevLabel: 'Anterior',
         skipLabel:'Terminar',
         doneLabel:'Cerrar',
-        steps: [      
+        steps: [     
             { 
                 element: document.querySelector('.box-header'),
                 intro: "Administración de Débito Automático. "
-            },  
-            { 
-                element: document.querySelector('#grid-debitosautomaticos'),
-                intro: "Listado de débitos automáticos."
             },
             {
-                element: document.querySelector('.grid-view .filters'),
-                intro: "Filtros para realizar busquedas específicas."
+                element: document.querySelector('.debito-automatico-search'),
+                intro: "Filtros para realizar busquedas."
+            },            
+            {
+                element: document.querySelector('.grid-view tbody'),
+                intro: "El resultado de la busqueda sera desplegado en esta sección."
+            },          
+            {
+                element: document.querySelector('.actionsgrid'),
+                intro: "Acciones para visualizar/gestionar el debito."
+            },
+            {
+                element: document.querySelector('.btn-export'),
+                intro: "Descargar archivo excel con detalle del listado."
             },
             {
                 element: document.querySelector('#btn-alta'),
                 intro: "Si deséa realizar una nueva alta."
             },
+            
+              
+            
+          
+            
         ]
       });
       intro.start();

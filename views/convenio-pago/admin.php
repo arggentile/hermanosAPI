@@ -9,6 +9,7 @@ use yii\widgets\Pjax;
 /* @var $dataProvider yii\data\ActiveDataProvider */
 
 $this->title = 'Convenios Pagos';
+$this->params['breadcrumbs'][] = $this->title;
 ?>
 <div class="box box-default box-colegio" id="convenio-pago-index">
     <div class="box-header with-border">        
@@ -125,6 +126,15 @@ $this->registerJs("
         window.open(curr_page,'_blank');      
     });
     
+    $(document).on('pjax:send', '#pjax-convenios', function() {  
+        $('#form-search-conveniospago .btn-search').button('loading');
+        $('body').loading({message: 'Aguarde procesando...'});
+    });       
+    
+    $(document).on('pjax:end', '#pjax-convenios', function() {    
+        $('body').loading('stop');         
+        $('#form-search-conveniospago .btn-search').button('reset');
+    }); 
    
     
 ", \yii\web\View::POS_READY);
@@ -141,20 +151,23 @@ function ayuda(){
         doneLabel:'Cerrar',
         steps: [      
             { 
-                element: document.querySelector('.box-header'),
-                intro: "Administración de Convenios de Pago. "
+                intro: "Listado de Alumnos."
             },  
-            { 
-                element: document.querySelector('#grid-convenios'),
-                intro: "Listado de convenios."
+            {
+                element: document.querySelector('.grupo-familiar-search'),
+                intro: "Filtros para realizar busquedas."
+            },            
+            {
+                element: document.querySelector('.grid-view tbody'),
+                intro: "El resultado de la busqueda sera desplegado en esta sección."
             },
             {
-                element: document.querySelector('.grid-view .filters'),
-                intro: "Filtros para realizar busquedas específicas."
+                element: document.querySelector('.btn-export'),
+                intro: "Descargar archivo excel con detalle del listado."
             },
             {
                 element: document.querySelector('#btn-alta'),
-                intro: "Si deséa realizar una nueva alta."
+                intro: "Si desea realizar un alta de convenio, presione sobre este boton."
             },
         ]
       });

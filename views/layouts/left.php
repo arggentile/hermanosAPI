@@ -59,17 +59,17 @@
                         'url' => ['/debito-automatico/administrar'],
                         'visible' => Yii::$app->user->can('listarDebitoAutomatico')
                     ],
-//                    [
-//                        'label' => 'Reportes',
-//                        'icon' => 'bar-chart',
-//                        'url' => '#',
-//                        'items' => [
-//                            ['label' => 'Servicios Brindados', 'icon' => 'fa fa-arrow-right', 'url' => ['/servicio-alumno/reporte']],        
-//                            ['label' => 'Alumnos con Bonificación', 'icon' => 'fa fa-arrow-right', 'url' => ['/alumno/bonificaciones-alumno']],        
-//                            ['label' => 'Facturas Emitidas', 'icon' => 'fa fa-arrow-right', 'url' => ['/caja/reporte-faturas-emitidas']],         
-//                        ],
-//                        //'visible' => Yii::$app->user->can('gestionarBonificacionAlumno') 
-//                    ],
+                    [
+                        'label' => 'Reportes',
+                        'icon' => 'bar-chart',
+                        'url' => '#',
+                        'items' => [
+                            ['label' => 'Servicios Brindados', 'icon' => 'fa fa-arrow-right', 'url' => ['/servicio-alumno/reporte']],        
+                            ['label' => 'Alumnos con Bonificación', 'icon' => 'fa fa-arrow-right', 'url' => ['/alumno/bonificaciones-alumno']],        
+                            ['label' => 'Tiket Emitidas', 'icon' => 'fa fa-arrow-right', 'url' => ['/caja/reporte-tiket-emitidos']],         
+                        ],
+                        //'visible' => Yii::$app->user->can('gestionarBonificacionAlumno') 
+                    ],
                     [
                         'label' => 'Servicios', 
                         'icon' => 'briefcase', 

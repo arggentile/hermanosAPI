@@ -74,6 +74,7 @@ $this->params['breadcrumbs'][] = $this->title;
                     },
                 ],
                 ['class' => 'yii\grid\ActionColumn',
+                'headerOptions' => ['width' => '50','class'=>'actionsgrid'],
                 'visibleButtons' => [                                   
                     'update' => Yii::$app->user->can('cargarFamilia'),
                     'view' => Yii::$app->user->can('visualizarFamilia'),
@@ -154,6 +155,10 @@ function ayuda(){
             {
                 element: document.querySelector('.pagoasociado'),
                 intro: "Medio pago adoptado."
+            },
+            {
+                element: document.querySelector('.actionsgrid'),
+                intro: "Acciones para visualizar o editar alumno."
             },
             {
                 element: document.querySelector('#btn-alta'),

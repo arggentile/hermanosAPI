@@ -10,7 +10,7 @@ use app\widgets\buscadorServiciosAlumno;
 /* @var $this yii\web\View */
 /* @var $model app\models\ServicioOfrecido */
 
-$this->title = $model->id;
+$this->title = "Gestion Servicio Ofrecido";
 $this->params['breadcrumbs'][] = ['label' => 'Servicio Ofrecidos', 'url' => ['index']];
 $this->params['breadcrumbs'][] = $this->title;
 ?>

@@ -126,6 +126,16 @@ function ayuda(){
                 element: document.querySelector('.alumnos-establecimiento'),
                 intro: 'Listado de alumno pertenecientes al establecimiento.'
             },
+            {
+                element: document.querySelector('thead tr.filters'),
+                intro: 'Filtros para realizar busquedas especificas.'
+            },
+            {
+                element: document.querySelector('.btn-export-alumno-esxtablecimiento'),
+                intro: 'Exportar el listado.'
+            },
+            
+            
         ]
       });
       intro.start();

@@ -45,7 +45,7 @@ $this->params['breadcrumbs'][] = $this->title;
                                'update' => function ($url, $model) {                                
                                                 return Html::a( '<i class="glyphicon glyphicon-pencil"></i>',
                                                                        ['create', 'id'=>$model['id']],
-                                                                       ['class'=>'btn btn-xs btn-warning editAjax',
+                                                                       ['class'=>'btn btn-xs btn-primary editAjax',
                                                                         'onclick'=>'js:{editAjax("'.Url::to(['create', 'id'=>$model['id']]) .'"); return false;}']
                                                                );
                                        },

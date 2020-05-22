@@ -228,3 +228,49 @@ $("body").on("beforeSubmit", "form.form-carga-responsable", function () {
     return false;
 });
 
+
+
+$(document).ready(function () {
+    $("body").on("click",".btn-delete-alumno", function(e){
+        e.preventDefault();
+        var href = $(this).attr('data-url');
+       
+        bootbox.confirm({
+            message: "Está seguro que desea Eliminar al Alumno?",
+            buttons: {
+                confirm: {
+                    label: '<i class="glyphicon glyphicon-ok"></i> Si',
+                    className: 'btn-success'
+                },
+                cancel: {
+                    label: '<i class="glyphicon glyphicon-remove"></i> No',
+                    className: 'btn-danger'
+                }
+            },
+            callback: function (result) {
+                if(result===true){
+                    // submit form        
+                    $.ajax({
+                        url    : href,
+                        type   : "get",                       
+                        dataType: "json",
+                        success: function (response) {
+                            if(response.error == 0){                                   
+                                                                
+                                    grillaajax = '#pjax-alumnos';
+                                    $.pjax.reload({container:grillaajax, timeout:false});                    
+                                
+                                
+                            }            
+                        },
+                        error  : function (xhr) {
+                            reportarNotificacionGral(xhr.responseText, 'error', true); 
+                            $('#btn-enviar').button('reset');
+                        }
+                    });
+                }
+            }
+        });
+    
+    });
+});
